@@ -1,0 +1,57 @@
+name: 部署到云服务器
+
+# 触发条件：推送到 main 分支时
+on:
+  push:
+    branches: ["master"]
+
+# 定义所有任务
+jobs:
+  build-and-deploy:
+    # 运行环境：Ubuntu 最新版
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 拉取代码
+      - name: 拉取代码仓库
+        uses: actions/checkout@v4
+
+      # 2. 设置 Node.js 环境
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # 3. 安装依赖并构建
+      - name: 安装依赖并打包
+        run: |
+          npm install
+          npm run build  # 如果是 React/Vue 项目，这会生成 dist/ 或 build/ 文件夹
+
+      # 4. 部署到云服务器
+      - name: 通过 SSH 部署
+        uses: appleboy/scp-action@v0.1.5 # 文件传输专用
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          # 将构建产物传到服务器的指定目录
+          source: "dist/*" # 如果你用 npm run build 生成的是 build/ 就改成 build/*
+          target: "/etc/nginx/muxiao/blogs"
+          strip_components: 1 # 去除 dist/ 这一层目录
+
+      # 5. 重启服务（如果使用 PM2 或 Nginx）
+      - name: 远程执行重启命令
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: |
+            cd /var/www/my-app
+            # 如果是 Node 后端
+            pm2 restart ecosystem.config.js || pm2 start app.js --name my-app
+            # 如果是静态前端，重载 Nginx 即可
+            sudo nginx -s reload
