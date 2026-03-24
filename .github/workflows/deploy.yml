@@ -49,9 +49,9 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
-          script: |
-            cd /var/www/my-app
-            # 如果是 Node 后端
-            pm2 restart ecosystem.config.js || pm2 start app.js --name my-app
-            # 如果是静态前端，重载 Nginx 即可
-            sudo nginx -s reload
+          # script: |
+          # cd /var/www/my-app
+          # 如果是 Node 后端
+          # pm2 restart ecosystem.config.js || pm2 start app.js --name my-app
+          # 如果是静态前端，重载 Nginx 即可
+          # sudo nginx -s reload
