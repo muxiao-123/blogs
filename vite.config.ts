@@ -43,15 +43,22 @@ export default defineConfig({
     host: true,
     hmr: {
       overlay: true
+    },
+    proxy: {
+      '/api': {
+        target: 'http://192.168.10.6:3001',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
     }
   },
-  // 预构建优化
+  // 预构建优化（只优化非 CDN 依赖）
   optimizeDeps: {
-    include: ['vue', 'vue-router', 'pinia']
+    include: []
   },
   build: {
-    // 禁用 CSS 代码分割，将所有 CSS 合并成一个文件
-    cssCodeSplit: false,
+    // 启用 CSS 代码分割
+    cssCodeSplit: true,
     // 生成 sourcemap 方便调试
     sourcemap: false,
     // 目标浏览器
@@ -83,8 +90,8 @@ export default defineConfig({
         entryFileNames: 'assets/js/[name]-[hash].js',
         // 代码分割配置
         manualChunks: {
-          // Vue 核心库
-          'vue-vendor': ['vue', 'vue-router', 'pinia']
+          // Vue 核心库 - 通过 CDN 加载，不打包
+          'vue-vendor': []
         },
         // 分隔符
         chunkFileNames: 'assets/js/[name]-[hash].js'

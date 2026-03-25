@@ -518,12 +518,14 @@ const handleSubmit = async () => {
 <style scoped>
 .profile-view {
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .main-content {
   position: relative;
   background: var(--color-bg-deep);
   padding-bottom: var(--space-2xl);
+  overflow-x: hidden;
 }
 
 /* 头部封面 */
@@ -549,6 +551,7 @@ const handleSubmit = async () => {
   position: relative;
   z-index: 2;
   margin-top: -60px;
+  overflow-x: hidden;
 }
 
 /* 用户信息卡片 */
@@ -812,6 +815,7 @@ const handleSubmit = async () => {
   border: 1px solid var(--color-border);
   border-radius: 12px;
   transition: all 0.2s;
+  overflow-x: hidden;
 }
 
 .article-item:hover {
@@ -1045,22 +1049,81 @@ const handleSubmit = async () => {
     align-items: center;
     text-align: center;
   }
-  
+
   .name-row {
     flex-direction: column;
   }
-  
+
   .stats-row {
     justify-content: center;
   }
-  
+
+  .content-tabs {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    min-width: calc(33% - 6px);
+    justify-content: center;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .tab-btn svg {
+    display: none;
+  }
+
   .article-item {
     flex-direction: column;
   }
-  
+
   .article-cover {
     width: 100%;
     height: 180px;
+  }
+
+  .article-stats {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .sort-section {
+    flex-wrap: wrap;
+  }
+
+  .article-count {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-container {
+    padding: 0 var(--space-md);
+  }
+
+  .profile-card {
+    padding: 16px;
+  }
+
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .stats-row {
+    gap: 16px;
+  }
+
+  .stat-item {
+    flex: 1;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
   }
 }
 </style>

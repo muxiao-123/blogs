@@ -11,16 +11,28 @@ const props = defineProps<{
 const defaultCover = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=200&fit=crop'
 const defaultAvatar = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
 
-// 图片加载错误处理
+// 图片加载状态
+const coverLoaded = ref(false)
 const coverError = ref(false)
+const avatarLoaded = ref(false)
 const avatarError = ref(false)
+
+const handleCoverLoad = () => {
+  coverLoaded.value = true
+}
 
 const handleCoverError = () => {
   coverError.value = true
+  coverLoaded.value = true
+}
+
+const handleAvatarLoad = () => {
+  avatarLoaded.value = true
 }
 
 const handleAvatarError = () => {
   avatarError.value = true
+  avatarLoaded.value = true
 }
 
 const categoryInfo = computed(() => {
@@ -40,10 +52,12 @@ const formatDate = (dateStr: string | undefined) => {
 <template>
   <article class="article-card" @click="$router.push(`/article/${article.id}`)">
     <div class="card-image">
+      <div v-if="!coverLoaded" class="image-placeholder"></div>
       <img
         :src="coverError ? defaultCover : article.cover"
         :alt="article.title"
         loading="lazy"
+        @load="handleCoverLoad"
         @error="handleCoverError"
       />
       <div class="card-overlay"></div>
@@ -112,6 +126,19 @@ const formatDate = (dateStr: string | undefined) => {
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s ease;
+}
+
+.image-placeholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
 
 .category-tag {

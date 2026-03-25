@@ -52,7 +52,6 @@ export interface CreateArticleInput {
 }
 
 // 使用环境变量，支持开发/生产环境切换
-console.log(import.meta.env.VITE_API_BASE)
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api'
 
 // 用户类型

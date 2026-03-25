@@ -6,6 +6,10 @@ import './styles/main.css'
 
 const app = createApp(App)
 
+// 使用 CDN 全局变量
+const pinia = (window as any).Pinia?.createPinia?.() || createPinia()
+const VueRouter = (window as any).VueRouter
+
 // 全局错误处理
 app.config.errorHandler = (err, instance, info) => {
   console.error('Vue Error:', err)
@@ -13,7 +17,7 @@ app.config.errorHandler = (err, instance, info) => {
   console.error('Info:', info)
 }
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
 
 app.mount('#app')

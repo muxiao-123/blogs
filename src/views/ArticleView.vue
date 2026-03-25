@@ -1274,5 +1274,15 @@ const renderContent = (content: string): string => {
     flex-direction: column;
     align-items: flex-start;
   }
+
+  .article-actions {
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .back-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>
