@@ -13,15 +13,20 @@ function htmlInjectPlugin(): PluginOption {
       // 读取生成的 HTML 文件
       let html = readFileSync(htmlPath, 'utf-8')
 
-      // 获取 CSS 文件路径
-      const cssMatch = html.match(/href="(\/assets\/css\/[^"]+\.css)"/)
+      // 获取入口 CSS 文件路径
+      const cssMatch = html.match(/href="(\/assets\/css\/index-[^"]+\.css)"/)
       const cssFile = cssMatch ? cssMatch[1] : null
 
-      // 替换 CSS 预加载占位符
       if (cssFile) {
+        // 移除重复的样式表链接（Vite 自动添加的）
+        const duplicateStyleRegex = new RegExp(`<link rel="stylesheet"[^>]*href="${cssFile.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"[^>]*>`, 'g')
+        html = html.replace(duplicateStyleRegex, '')
+        
+        // 替换 CSS 预加载占位符
         html = html.replace(
           /<!--\s*PRELOAD_CSS\s*-->/g,
-          `<link rel="preload" href="${cssFile}" as="style">`
+          `<link rel="preload" href="${cssFile}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="${cssFile}"></noscript>`
         )
       }
 
@@ -52,9 +57,9 @@ export default defineConfig({
       }
     }
   },
-  // 预构建优化（只优化非 CDN 依赖）
+  // 预构建优化
   optimizeDeps: {
-    include: []
+    include: ['vue', 'vue-router', 'pinia']
   },
   build: {
     // 启用 CSS 代码分割
@@ -90,8 +95,8 @@ export default defineConfig({
         entryFileNames: 'assets/js/[name]-[hash].js',
         // 代码分割配置
         manualChunks: {
-          // Vue 核心库 - 通过 CDN 加载，不打包
-          'vue-vendor': []
+          // Vue 核心库
+          'vue-vendor': ['vue', 'vue-router', 'pinia']
         },
         // 分隔符
         chunkFileNames: 'assets/js/[name]-[hash].js'

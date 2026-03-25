@@ -48,6 +48,7 @@ const toggleUserMenu = () => {
 }
 
 const closeUserMenu = () => {
+  closeMobileMenu()
   isUserMenuOpen.value = false
 }
 
@@ -103,9 +104,18 @@ watch(() => userStore.isLoggedIn, (loggedIn) => {
   }
 })
 
+// 监听路由变化，关闭移动菜单
+watch(() => route.fullPath, () => {
+  if (isMobileMenuOpen.value) {
+    closeMobileMenu()
+  }
+})
+
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   document.removeEventListener('click', () => {})
+  // 确保清理 overflow 样式
+  closeMobileMenu()
 })
 </script>
 

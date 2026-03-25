@@ -49,23 +49,64 @@ const getMetricClass = (value: number, thresholds: { good: number; warning: numb
   return 'bad'
 }
 
-// 获取 Web Vitals
 const getWebVitals = () => {
   const perfData = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
-  
   if (perfData) {
-    // LCP
-    const lcpEntry = performance.getEntriesByType('largest-contentful-paint')[0] as PerformanceEntry
-    webVitals.value.lcp = lcpEntry ? Math.round((lcpEntry as any).startTime) : null
-    
-    // FCP
-    const fcpEntry = performance.getEntriesByType('paint').find((e: any) => e.name === 'first-contentful-paint')
-    webVitals.value.fcp = fcpEntry ? Math.round((fcpEntry as any).startTime) : null
-    
     // TTFB
     webVitals.value.ttfb = Math.round(perfData.responseStart - perfData.requestStart)
   }
+  // 分别为每个类型创建观察器，各自使用 buffered
+  const paintObserver = new PerformanceObserver((list) => {
+      console.log('Paint:', list.getEntries());
+      // const fp = list.getEntries()[0] as PerformancePaintTiming
+      const fcp = list.getEntries()[1] as PerformancePaintTiming
+      webVitals.value.fcp = Math.round(fcp.startTime)
+      paintObserver.disconnect()
+  });
+  paintObserver.observe({ type: 'paint', buffered: true })
+
+  const lcpObserver = new PerformanceObserver((list) => {
+      console.log('LCP:', list.getEntries());
+      const lcp = list.getEntries()[0]
+      webVitals.value.lcp = Math.round(lcp.startTime)
+      lcpObserver.disconnect()
+  });
+  lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+
+  const layoutObserver = new PerformanceObserver((list) => {
+      console.log('Layout Shift:', list.getEntries());
+      const cls = list.getEntries()[0] as unknown as { value: number }
+      webVitals.value.cls = Math.round(cls.value)
+      layoutObserver.disconnect()
+  });
+  layoutObserver.observe({ type: 'layout-shift', buffered: true });
+
+  const fidObserver = new PerformanceObserver((list) => {
+      console.log('Frist Input:', list.getEntries());
+      const fid = list.getEntries()[0] as unknown as { processingStart: number, startTime: number }
+      webVitals.value.fid = Math.round( fid.processingStart - fid.startTime)
+      fidObserver.disconnect()
+  });
+  fidObserver.observe({ type: 'first-input', buffered: true });
 }
+
+// 获取 Web Vitals
+// const getWebVitals = () => {
+//   const perfData = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+  
+//   if (perfData) {
+//     // LCP
+//     const lcpEntry = performance.getEntriesByType('largest-contentful-paint')[0] as PerformanceEntry
+//     webVitals.value.lcp = lcpEntry ? Math.round((lcpEntry as any).startTime) : null
+    
+//     // FCP
+//     const fcpEntry = performance.getEntriesByType('paint').find((e: any) => e.name === 'first-contentful-paint')
+//     webVitals.value.fcp = fcpEntry ? Math.round((fcpEntry as any).startTime) : null
+    
+//     // TTFB
+//     webVitals.value.ttfb = Math.round(perfData.responseStart - perfData.requestStart)
+//   }
+// }
 
 // 获取页面加载时间
 const getLoadTimes = () => {

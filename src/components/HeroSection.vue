@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { api } from '@/api/index'
+import { useUserStore } from '@/stores/user'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+const userStore = useUserStore()
 const particles = ref<Array<{ x: number; y: number; size: number; speed: number }>>([])
 
 const stats = ref({
@@ -31,7 +35,11 @@ const formatNumber = (num: number): string => {
   }
   return num.toString()
 }
-
+const clickHandle = () => {
+  if (userStore.isLoggedIn) {
+    router.push('/performance')
+  }
+}
 onMounted(() => {
   // Generate random particles
   for (let i = 0; i < 50; i++) {
@@ -70,7 +78,7 @@ onMounted(() => {
     </div>
     <div class="hero-content">
       <h1 class="hero-title">
-        <span class="title-line">探索技术的</span>
+        <span class="title-line" @click="clickHandle">探索技术的</span>
         <span class="title-line gradient">星辰大海</span>
       </h1>
       <p class="hero-subtitle">
