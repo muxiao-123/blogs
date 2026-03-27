@@ -2294,5 +2294,112 @@ deploy_production:
     likes: 43,
     isLiked: false,
     comments: []
+  },
+  {
+    id: '27',
+    title: 'GitHub Actions 实战：打造自动化部署流水线',
+    excerpt: '从零开始学习 GitHub Actions，掌握 CI/CD 自动化部署的核心技能。',
+    content: `
+# GitHub Actions 实战：打造自动化部署流水线
+
+## 什么是 GitHub Actions？
+
+GitHub Actions 是 GitHub 提供的自动化工作流工具，可以帮助开发者自动执行代码构建、测试、部署等流程。无需额外配置服务器，只需在仓库中定义工作流文件即可。
+
+## 核心概念
+
+### Workflow（工作流）
+
+工作流是自动化的核心，通过 .github/workflows 目录下的 YAML 文件定义。一个工作流可以包含多个 Job，每个 Job 又包含多个 Step。
+
+### Runner（运行器）
+
+Runner 是执行工作流的服务器。GitHub 提供了托管的 Ubuntu、Windows、macOS 运行器，也可以自建运行器满足特殊需求。
+
+### Action（动作）
+
+Action 是最小的可复用单元。可以使用 GitHub 社区分享的 Action，也可以编写自定义 Action 来完成特定任务。
+
+## 实战演练
+
+### 第一步：创建工作流文件
+
+在项目中新建 .github/workflows/deploy.yml：
+
+\`\`\`yaml
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Run Tests
+        run: npm test
+      
+      - name: Build
+        run: npm run build
+\`\`\`
+
+### 第二步：添加部署步骤
+
+\`\`\`yaml
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/app
+            git pull origin main
+            npm install
+            npm run build
+            pm2 restart app
+\`\`\`
+
+## 最佳实践
+
+1. **使用缓存**：利用 actions/cache 加速依赖安装
+2. **环境变量**：敏感信息使用 Secrets 存储
+3. **并行任务**：独立的 Job 可以并行执行，提高效率
+4. **失败通知**：配置 Slack 或邮件通知，及时获取构建状态
+
+## 总结
+
+GitHub Actions 让 CI/CD 变得简单高效。掌握其核心概念后，可以快速搭建适合项目的自动化流水线，大幅提升开发效率。
+    `,
+    cover: 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=600&q=85',
+    category: 'fullstack',
+    tags: ['GitHub', 'CI/CD', 'DevOps', '自动化'],
+    author: {
+      name: 'Lumina',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=lumina',
+      bio: '热爱技术的开发者'
+    },
+    publishDate: '2024-03-25',
+    readTime: 8,
+    views: 0,
+    likes: 0,
+    isLiked: false,
+    comments: []
   }
 ]

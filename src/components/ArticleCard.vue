@@ -8,7 +8,7 @@ const props = defineProps<{
 }>()
 
 // 默认图片
-const defaultCover = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&h=200&fit=crop'
+const defaultCover = '/default-cover.svg'
 const defaultAvatar = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
 
 // 图片加载状态

@@ -25,7 +25,7 @@ const authorUserId = ref('')
 const authorUsername = ref('')
 
 // 默认图片
-const defaultCover = 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&h=400&fit=crop'
+const defaultCover = '/default-cover.svg'
 
 // 背景图加载错误处理
 const coverError = ref(false)

@@ -56,6 +56,8 @@ const handleLogout = () => {
   userStore.logout()
   isMobileMenuOpen.value = false
   isUserMenuOpen.value = false
+  // 退出登录时滚动到顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
   router.push('/')
 }
 

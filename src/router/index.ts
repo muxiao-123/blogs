@@ -72,12 +72,8 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(to, _from) {
-    // 跳转到登录页时保持当前位置，不滚动
-    if (to.path === '/auth') {
-      return
-    }
-    return { top: 0 }
+  scrollBehavior(_to, _from) {
+    // 默认不滚动，由具体业务逻辑控制
   }
 })
 
