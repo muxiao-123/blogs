@@ -3,7 +3,7 @@ name: 部署到云服务器
 # 触发条件：推送到 main 分支时
 on:
   push:
-    branches: ["master"]
+    branches: ["publish"]
 
 # 定义所有任务
 jobs:
