@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
 import { readFileSync, writeFileSync } from 'fs';
+import { Plugin as CdnImportPlugin } from 'vite-plugin-cdn-import';
 // 自定义插件：自动添加 CSS 预加载标签
 function htmlInjectPlugin() {
     return {
@@ -26,7 +27,29 @@ function htmlInjectPlugin() {
     };
 }
 export default defineConfig({
-    plugins: [vue(), htmlInjectPlugin()],
+    plugins: [
+        vue(),
+        CdnImportPlugin({
+            modules: [
+                {
+                    name: 'vue',
+                    var: 'Vue',
+                    path: 'http://119.91.22.42:8081/cdn/vue.global.prod.js'
+                },
+                {
+                    name: 'vue-router',
+                    var: 'VueRouter',
+                    path: 'http://119.91.22.42:8081/cdn/vue-router.global.prod.js'
+                },
+                {
+                    name: 'pinia',
+                    var: 'Pinia',
+                    path: 'http://119.91.22.42:8081/cdn/pinia.iife.prod.js'
+                }
+            ]
+        }),
+        htmlInjectPlugin(),
+    ],
     resolve: {
         alias: {
             '@': resolve(__dirname, 'src')
@@ -84,13 +107,14 @@ export default defineConfig({
                 // JS 文件名
                 entryFileNames: 'assets/js/[name]-[hash].js',
                 // 代码分割配置
-                manualChunks: {
-                    // Vue 核心库
-                    'vue-vendor': ['vue', 'vue-router', 'pinia']
-                },
+                // manualChunks: {
+                //   // Vue 核心库
+                //   'vue-vendor': ['vue', 'vue-router', 'pinia']
+                // },
                 // 分隔符
                 chunkFileNames: 'assets/js/[name]-[hash].js'
-            }
+            },
+            external: ['vue', 'vue-router', 'pinia']
         },
         // 报告写入大小
         reportCompressedSize: true
