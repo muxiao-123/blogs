@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useArticleStore, type CreateArticleInput } from '@/stores/articles'
 import { useUserStore } from '@/stores/user'
@@ -29,6 +29,65 @@ const formData = ref<CreateArticleInput>({
   category: 'frontend',
   tags: []
 })
+
+const STORAGE_KEY = 'lumina_draft_article'
+
+// 从 localStorage 恢复草稿
+const restoreDraft = () => {
+  if (isEditMode.value) return
+
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) {
+    try {
+      const draft = JSON.parse(saved)
+      // 只有草稿有实际内容时才恢复
+      if (draft.title || draft.content || draft.excerpt) {
+        isRestoring.value = true
+        formData.value = { ...formData.value, ...draft }
+        // 延迟重置标志，确保 watch 不会立即保存空内容
+        setTimeout(() => {
+          isRestoring.value = false
+        }, 100)
+      }
+    } catch (e) {
+      console.error('恢复草稿失败:', e)
+    }
+  }
+}
+
+// 保存草稿到 localStorage（只有内容非空时才保存）
+const saveDraft = () => {
+  if (isEditMode.value) return
+
+  // 只有当有实际内容时才保存
+  const hasContent = formData.value.title || formData.value.content || formData.value.excerpt
+  if (!hasContent) return
+
+  const draft = {
+    title: formData.value.title,
+    excerpt: formData.value.excerpt,
+    content: formData.value.content,
+    cover: formData.value.cover,
+    category: formData.value.category,
+    tags: formData.value.tags
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
+}
+
+// 清除草稿
+const clearDraft = () => {
+  localStorage.removeItem(STORAGE_KEY)
+}
+
+// 是否正在恢复草稿中
+const isRestoring = ref(false)
+
+// 监听表单变化自动保存
+watch(formData, () => {
+  if (!isRestoring.value) {
+    saveDraft()
+  }
+}, { deep: true })
 
 const tagInput = ref('')
 const isSubmitting = ref(false)
@@ -61,6 +120,9 @@ onMounted(async () => {
     } finally {
       isLoading.value = false
     }
+  } else {
+    // 非编辑模式下恢复草稿
+    restoreDraft()
   }
 })
 
@@ -199,6 +261,7 @@ const submitForm = async () => {
       // 创建模式
       const newArticle = await articleStore.createArticle(formData.value)
       if (newArticle) {
+        clearDraft() // 成功后清除草稿
         router.push(`/article/${newArticle.id}`)
       } else {
         errors.value.submit = '创建文章失败，请重试'

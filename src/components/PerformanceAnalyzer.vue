@@ -237,7 +237,14 @@ const clearCache = async () => {
     const names = await caches.keys()
     names.forEach(name => caches.delete(name))
   }
-  localStorage.clear()
+  // 只清除特定应用数据，保留草稿等用户数据
+  const keysToKeep = ['lumina_draft_article']
+  const allKeys = Object.keys(localStorage)
+  allKeys.forEach(key => {
+    if (!keysToKeep.includes(key)) {
+      localStorage.removeItem(key)
+    }
+  })
   sessionStorage.clear()
   runAnalysis()
 }
