@@ -181,15 +181,28 @@ const tocItems = ref<Array<{ id: string; text: string; level: number }>>([])
 const hasToc = computed(() => tocItems.value.length > 0)
 
 const parseToc = (content: string) => {
-  const headingRegex = /^(#{1,3})\s+(.+)$/gm
   const items: Array<{ id: string; text: string; level: number }> = []
+
+  // 优先尝试解析 HTML 格式标题 (Tiptap)
+  const htmlRegex = /<h([1-3])[^>]*>([^<]+)<\/h[1-3]>/gi
   let match
 
-  while ((match = headingRegex.exec(content)) !== null) {
-    const level = match[1].length
-    const text = match[2]
+  while ((match = htmlRegex.exec(content)) !== null) {
+    const level = parseInt(match[1])
+    const text = match[2].trim()
     const id = text.toLowerCase().replace(/[^\u4e00-\u9fa5a-z0-9]+/g, '-')
     items.push({ id, text, level })
+  }
+
+  // 如果没有 HTML 标题，再尝试 Markdown 格式
+  if (items.length === 0) {
+    const mdRegex = /^(#{1,3})\s+(.+)$/gm
+    while ((match = mdRegex.exec(content)) !== null) {
+      const level = match[1].length
+      const text = match[2].trim()
+      const id = text.toLowerCase().replace(/[^\u4e00-\u9fa5a-z0-9]+/g, '-')
+      items.push({ id, text, level })
+    }
   }
 
   return items
@@ -256,7 +269,15 @@ const renderContent = (content: string): string => {
   if (!content) return ''
 
   let html = content
-    // Headers - 使用安全的 id
+
+  // HTML Headers - 给已存在的 HTML 标题添加 id (Tiptap 生成的)
+  html = html.replace(/<h([1-3])[^>]*>([^<]+)<\/h[1-3]>/gi, (_match, level, text) => {
+    const id = toSafeId(text.trim())
+    return `<h${level} id="${id}">${text}</h${level}>`
+  })
+
+  // Markdown Headers - 使用安全的 id
+  html = html
     .replace(/^### (.+)$/gm, (_match, p1) => `<h3 id="${toSafeId(p1)}">${p1}</h3>`)
     .replace(/^## (.+)$/gm, (_match, p1) => `<h2 id="${toSafeId(p1)}">${p1}</h2>`)
     .replace(/^# (.+)$/gm, (_match, p1) => `<h1 id="${toSafeId(p1)}">${p1}</h1>`)

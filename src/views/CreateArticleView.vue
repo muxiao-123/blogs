@@ -8,6 +8,7 @@ import { api } from '@/api/index'
 import type { Category } from '@/types'
 import NavBar from '@/components/NavBar.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
+import TiptapEditor from '@/components/TiptapEditor.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -155,9 +156,11 @@ const validateForm = (): boolean => {
     errors.value.excerpt = '摘要至少需要10个字符'
   }
 
-  if (!formData.value.content.trim()) {
+  // 去除 HTML 标签后计算纯文本长度
+  const contentText = formData.value.content.replace(/<[^>]*>/g, '').trim()
+  if (!contentText) {
     errors.value.content = '请输入文章内容'
-  } else if (formData.value.content.length < 50) {
+  } else if (contentText.length < 50) {
     errors.value.content = '内容至少需要50个字符'
   }
 
@@ -234,7 +237,9 @@ const removeCustomCover = () => {
 }
 
 const estimatedReadTime = computed(() => {
-  const length = formData.value.content.length
+  // 去除 HTML 标签后计算纯文本长度
+  const textOnly = formData.value.content.replace(/<[^>]*>/g, '').trim()
+  const length = textOnly.length
   return Math.max(1, Math.ceil(length / 500))
 })
 
@@ -426,16 +431,15 @@ const goBack = () => {
               文章内容 <span class="required">*</span>
               <span class="read-time">预计阅读时间: {{ estimatedReadTime }} 分钟</span>
             </label>
-            <textarea
+            <TiptapEditor
               id="content"
               v-model="formData.content"
-              rows="15"
-              placeholder="使用 Markdown 格式编写文章内容..."
+              placeholder="开始编写文章内容..."
               :class="{ error: errors.content }"
-            ></textarea>
+            />
             <span v-if="errors.content" class="error-message">{{ errors.content }}</span>
             <div class="content-hint">
-              支持 Markdown 语法：# 标题、**粗体**、`代码`、- 列表等
+              支持富文本格式：标题、粗体、斜体、代码、链接、列表等
             </div>
           </div>
 
