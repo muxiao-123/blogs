@@ -156,9 +156,26 @@
           
             <div class="article-list">
               <article v-for="article in currentArticles" :key="article.id" class="article-item">
-              <router-link :to="activeTab === 'articles' ? `/article/${article.id}` : '#'" class="article-cover-link">
-                <img :src="article.cover" :alt="article.title" class="article-cover" />
-              </router-link>
+              <div class="article-cover-wrapper">
+                <router-link :to="activeTab === 'articles' ? `/article/${article.id}` : '#'" class="article-cover-link">
+                  <img :src="article.cover" :alt="article.title" class="article-cover" />
+                </router-link>
+                <!-- 编辑和删除按钮，仅在文章列表显示 -->
+                <div v-if="activeTab === 'articles'" class="article-actions">
+                  <button class="action-btn edit" @click.stop="handleEdit(article.id)" title="编辑">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                  </button>
+                  <button class="action-btn delete" @click.stop="confirmDelete(article.id)" title="删除">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
               <div class="article-content">
                 <div class="article-meta">
                   <span class="article-category">{{ article.category }}</span>
@@ -196,22 +213,6 @@
                     {{ article.readTime }} min
                   </span>
                 </div>
-                
-                <!-- 编辑和删除按钮，仅在文章列表显示 -->
-                <div v-if="activeTab === 'articles'" class="article-actions">
-                  <button class="action-btn edit" @click.stop="handleEdit(article.id)" title="编辑">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
-                  </button>
-                  <button class="action-btn delete" @click.stop="handleDelete(article.id)" title="删除">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="3 6 5 6 21 6"></polyline>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                  </button>
-                </div>
               </div>
             </article>
           </div>
@@ -219,6 +220,26 @@
         </div>
       </div>
     </main>
+
+    <!-- 删除确认弹窗 -->
+    <div class="modal-overlay" v-show="showDeleteModal" @click.self="cancelDelete">
+      <div class="delete-modal">
+        <div class="delete-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h3>确认删除</h3>
+        <p>确定要删除这篇文章吗？此操作不可恢复，请谨慎操作。</p>
+        <div class="delete-actions">
+          <button class="cancel-btn" @click="cancelDelete">取消</button>
+          <button class="confirm-delete-btn" @click="handleDelete">确认删除</button>
+        </div>
+      </div>
+    </div>
+
     <SiteFooter />
     
     <!-- 编辑资料弹窗 -->
@@ -318,6 +339,8 @@ const loading = ref(false)
 const error = ref('')
 const success = ref('')
 const showEditModal = ref(false)
+const showDeleteModal = ref(false)
+const articleToDelete = ref<string | null>(null)
 const activeTab = ref('articles')
 const userArticles = ref<Article[]>([])
 const sortBy = ref<'publishDate' | 'views'>('publishDate')
@@ -469,14 +492,26 @@ const handleEdit = (articleId: string) => {
   router.push(`/edit/${articleId}`)
 }
 
-const handleDelete = async (articleId: string) => {
-  if (!confirm('确定要删除这篇文章吗？此操作不可恢复。')) return
-  
-  const success = await articleStore.deleteArticle(articleId)
+const confirmDelete = (articleId: string) => {
+  articleToDelete.value = articleId
+  showDeleteModal.value = true
+}
+
+const handleDelete = async () => {
+  if (!articleToDelete.value) return
+
+  const success = await articleStore.deleteArticle(articleToDelete.value)
   if (success) {
-    userArticles.value = userArticles.value.filter(a => a.id !== articleId)
+    userArticles.value = userArticles.value.filter(a => a.id !== articleToDelete.value)
     stats.value.articleCount--
   }
+  showDeleteModal.value = false
+  articleToDelete.value = null
+}
+
+const cancelDelete = () => {
+  showDeleteModal.value = false
+  articleToDelete.value = null
 }
 
 const handleSubmit = async () => {
@@ -827,11 +862,24 @@ const handleSubmit = async () => {
   flex-shrink: 0;
 }
 
+.article-cover-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .article-cover {
   width: 200px;
   height: 130px;
   object-fit: cover;
   border-radius: 8px;
+}
+
+.article-cover-wrapper .article-actions {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .article-content {
@@ -1125,5 +1173,138 @@ const handleSubmit = async () => {
   .stat-value {
     font-size: 1.1rem;
   }
+}
+
+/* 文章操作按钮 */
+.article-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-btn.edit {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.2));
+  color: #6366f1;
+}
+
+.action-btn.edit:hover {
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.action-btn.delete {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+  color: #ef4444;
+}
+
+.action-btn.delete:hover {
+  background: linear-gradient(135deg, #ef4444, #f87171);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.action-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* 删除确认弹窗 */
+.delete-modal {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  animation: modal-in 0.3s ease;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.delete-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.2));
+  border-radius: 50%;
+  color: #ef4444;
+  margin-bottom: 20px;
+}
+
+.delete-modal h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--color-text-primary);
+}
+
+.delete-modal p {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.delete-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.delete-modal .cancel-btn {
+  padding: 12px 24px;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.delete-modal .cancel-btn:hover {
+  border-color: var(--color-text-secondary);
+  background: var(--color-bg-light);
+}
+
+.delete-modal .confirm-delete-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #ef4444, #f87171);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.delete-modal .confirm-delete-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
 }
 </style>
