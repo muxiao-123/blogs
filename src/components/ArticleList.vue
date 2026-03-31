@@ -8,6 +8,14 @@ const articleStore = useArticleStore()
 const sectionTitle = computed(() => {
   return articleStore.sortBy === 'views' ? '热门文章' : '最新文章'
 })
+
+const displayedCount = computed(() => {
+  return articleStore.paginatedArticles.length
+})
+
+const totalCount = computed(() => {
+  return articleStore.filteredArticles.length
+})
 </script>
 
 <template>
@@ -16,19 +24,25 @@ const sectionTitle = computed(() => {
       <h2 class="section-title">
         <span class="title-accent">{{ sectionTitle }}</span>
       </h2>
-      <p class="article-count">共 {{ articleStore.filteredArticles.length }} 篇文章</p>
+      <p class="article-count">共 {{ totalCount }} 篇，已加载 {{ displayedCount }} 篇</p>
     </div>
 
     <div class="articles-grid" v-if="articleStore.filteredArticles.length > 0">
       <ArticleCard
-        v-for="(article, index) in articleStore.filteredArticles"
+        v-for="(article, index) in articleStore.paginatedArticles"
         :key="article.id"
         :article="article"
         :style="{ animationDelay: `${index * 0.1}s` }"
       />
     </div>
 
-    <div class="empty-state" v-else>
+    <div class="load-more-wrapper" v-if="articleStore.hasMore">
+      <button class="load-more-btn" @click="articleStore.loadMore">
+        加载更多
+      </button>
+    </div>
+
+    <div class="empty-state" v-if="articleStore.filteredArticles.length === 0">
       <div class="empty-icon">🔍</div>
       <h3>没有找到相关文章</h3>
       <p>试试调整筛选条件或搜索关键词</p>
@@ -103,6 +117,30 @@ const sectionTitle = computed(() => {
 .reset-btn:hover {
   box-shadow: var(--glow-primary);
   transform: scale(1.05);
+}
+
+.load-more-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-xl);
+}
+
+.load-more-btn {
+  padding: var(--space-md) var(--space-2xl);
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.load-more-btn:hover {
+  background: var(--color-primary);
+  color: var(--color-bg-deep);
+  box-shadow: var(--glow-primary);
 }
 
 @media (max-width: 768px) {

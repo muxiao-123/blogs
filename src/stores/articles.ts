@@ -31,6 +31,13 @@ export const useArticleStore = defineStore('articles', () => {
   const selectedTags = ref<string[]>([])
   const sortBy = ref<'publishDate' | 'views'>('publishDate')
 
+  // 分页相关
+  const currentPage = ref(1)
+  const pageSize = 20
+  const hasMore = computed(() => {
+    return filteredArticles.value.length > currentPage.value * pageSize
+  })
+
   // 初始化加载数据
   const init = async () => {
     loading.value = true
@@ -78,6 +85,25 @@ export const useArticleStore = defineStore('articles', () => {
     return result
   })
 
+  // 分页后的文章列表
+  const paginatedArticles = computed(() => {
+    const start = 0
+    const end = currentPage.value * pageSize
+    return filteredArticles.value.slice(start, end)
+  })
+
+  // 加载更多
+  const loadMore = () => {
+    if (hasMore.value) {
+      currentPage.value++
+    }
+  }
+
+  // 重置分页（当筛选条件变化时）
+  const resetPagination = () => {
+    currentPage.value = 1
+  }
+
   const allTags = computed(() => {
     const tagSet = new Set<string>()
     articles.value.forEach(article => {
@@ -92,6 +118,7 @@ export const useArticleStore = defineStore('articles', () => {
 
   const setSearchQuery = (query: string) => {
     searchQuery.value = query
+    resetPagination()
   }
 
   const setSortBy = (sort: 'publishDate' | 'views') => {
@@ -100,6 +127,7 @@ export const useArticleStore = defineStore('articles', () => {
 
   const setCategory = (category: Category | null) => {
     selectedCategory.value = category
+    resetPagination()
   }
 
   const toggleTag = (tag: string) => {
@@ -109,12 +137,14 @@ export const useArticleStore = defineStore('articles', () => {
     } else {
       selectedTags.value.splice(index, 1)
     }
+    resetPagination()
   }
 
   const clearFilters = () => {
     searchQuery.value = ''
     selectedCategory.value = null
     selectedTags.value = []
+    resetPagination()
   }
 
   const createArticle = async (input: CreateArticleInput): Promise<Article | null> => {
@@ -257,6 +287,9 @@ export const useArticleStore = defineStore('articles', () => {
     selectedTags,
     sortBy,
     filteredArticles,
+    paginatedArticles,
+    hasMore,
+    currentPage,
     allTags,
     init,
     getArticleById,
@@ -265,6 +298,7 @@ export const useArticleStore = defineStore('articles', () => {
     setCategory,
     toggleTag,
     clearFilters,
+    loadMore,
     createArticle,
     updateArticle,
     deleteArticle,
