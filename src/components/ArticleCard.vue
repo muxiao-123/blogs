@@ -9,7 +9,8 @@ const props = defineProps<{
 
 // 默认图片
 const defaultCover = '/default-cover.svg'
-const defaultAvatar = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
+const defaultAvatar =
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'
 
 // 图片加载状态
 const coverLoaded = ref(false)
@@ -36,7 +37,7 @@ const handleAvatarError = () => {
 }
 
 const categoryInfo = computed(() => {
-  return categories.find(c => c.key === props.article.category) || categories[3]
+  return categories.find((c) => c.key === props.article.category) || categories[3]
 })
 
 const formatDate = (dateStr: string | undefined) => {
@@ -80,16 +81,30 @@ const formatDate = (dateStr: string | undefined) => {
         </div>
         <div class="meta-right">
           <span class="meta-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12,6 12,12 16,14"/>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12,6 12,12 16,14" />
             </svg>
             {{ article.readTime }} 分钟
           </span>
           <span class="meta-item">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
             </svg>
             {{ article.views }}
           </span>
@@ -136,9 +151,15 @@ const formatDate = (dateStr: string | undefined) => {
 }
 
 @keyframes shimmer {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
 }
 
 .category-tag {

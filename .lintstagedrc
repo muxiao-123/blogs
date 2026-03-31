@@ -1,0 +1,4 @@
+{
+  "*.{vue,js,ts,jsx,tsx}": ["eslint --fix --cache --cache-location node_modules/.cache/eslint/"],
+  "*.{vue,js,ts,jsx,tsx,json,css,scss,sass,less,html,md}": ["prettier --write"]
+}

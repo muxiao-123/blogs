@@ -91,17 +91,17 @@ class ApiService {
   private async request<T>(url: string, options?: RequestInit): Promise<T> {
     // 从localStorage获取token
     const token = localStorage.getItem('token')
-    
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json'
     }
-    
+
     // 添加自定义 headers
     if (options?.headers) {
       const customHeaders = options.headers as Record<string, string>
       Object.assign(headers, customHeaders)
     }
-    
+
     // 如果存在token，添加到请求头
     if (token) {
       const cleanToken = token.trim()
@@ -110,7 +110,7 @@ class ApiService {
     } else {
       console.log('API request without token')
     }
-    
+
     const response = await fetch(url, {
       ...options,
       headers
@@ -190,13 +190,23 @@ class ApiService {
   }
 
   // 获取全局统计
-  async getStats(): Promise<{ articleCount: number; totalViews: number; totalSubscribers: number }> {
-    return this.request<{ articleCount: number; totalViews: number; totalSubscribers: number }>(`${API_BASE}/articles/stats`)
+  async getStats(): Promise<{
+    articleCount: number
+    totalViews: number
+    totalSubscribers: number
+  }> {
+    return this.request<{ articleCount: number; totalViews: number; totalSubscribers: number }>(
+      `${API_BASE}/articles/stats`
+    )
   }
 
   // 获取用户（作者）文章统计
-  async getUserStats(author: string): Promise<{ articleCount: number; totalViews: number; totalLikes: number }> {
-    return this.request<{ articleCount: number; totalViews: number; totalLikes: number }>(`${API_BASE}/articles/user/stats?author=${encodeURIComponent(author)}`)
+  async getUserStats(
+    author: string
+  ): Promise<{ articleCount: number; totalViews: number; totalLikes: number }> {
+    return this.request<{ articleCount: number; totalViews: number; totalLikes: number }>(
+      `${API_BASE}/articles/user/stats?author=${encodeURIComponent(author)}`
+    )
   }
 
   // 获取用户收藏的文章
@@ -206,9 +216,12 @@ class ApiService {
 
   // 添加/取消收藏
   async toggleFavorite(articleId: string): Promise<{ favorited: boolean; favorites?: number }> {
-    return this.request<{ favorited: boolean; favorites?: number }>(`${API_BASE}/articles/${articleId}/favorite`, {
-      method: 'POST'
-    })
+    return this.request<{ favorited: boolean; favorites?: number }>(
+      `${API_BASE}/articles/${articleId}/favorite`,
+      {
+        method: 'POST'
+      }
+    )
   }
 
   // 检查文章是否已收藏
@@ -217,7 +230,11 @@ class ApiService {
   }
 
   // 添加评论
-  async addComment(articleId: string, content: string, author: { id?: string; name: string; avatar: string }): Promise<Comment> {
+  async addComment(
+    articleId: string,
+    content: string,
+    author: { id?: string; name: string; avatar: string }
+  ): Promise<Comment> {
     return this.request<Comment>(`${API_BASE}/articles/${articleId}/comments`, {
       method: 'POST',
       body: JSON.stringify({ content, author })
@@ -233,9 +250,12 @@ class ApiService {
 
   // 点赞评论
   async toggleCommentLike(articleId: string, commentId: string): Promise<{ likes: number }> {
-    return this.request<{ likes: number }>(`${API_BASE}/articles/${articleId}/comments/${commentId}/like`, {
-      method: 'POST'
-    })
+    return this.request<{ likes: number }>(
+      `${API_BASE}/articles/${articleId}/comments/${commentId}/like`,
+      {
+        method: 'POST'
+      }
+    )
   }
 
   // 上传图片
@@ -263,7 +283,9 @@ class ApiService {
     const result = await response.json()
     // 转换为完整URL
     return {
-      url: result.url.startsWith('http') ? result.url : `${API_BASE.replace('/api', '')}${result.url}`
+      url: result.url.startsWith('http')
+        ? result.url
+        : `${API_BASE.replace('/api', '')}${result.url}`
     }
   }
 
@@ -281,7 +303,11 @@ class ApiService {
   }
 
   // 发送消息
-  async sendMessage(receiverId: string, receiverUsername: string, content: string): Promise<Message> {
+  async sendMessage(
+    receiverId: string,
+    receiverUsername: string,
+    content: string
+  ): Promise<Message> {
     return this.request<Message>(`${API_BASE}/messages/send`, {
       method: 'POST',
       body: JSON.stringify({ receiverId, receiverUsername, content })
@@ -294,7 +320,9 @@ class ApiService {
     if (limit) params.set('limit', String(limit))
     if (skip) params.set('skip', String(skip))
     const query = params.toString()
-    return this.request<Message[]>(`${API_BASE}/messages/conversation/${userId}${query ? `?${query}` : ''}`)
+    return this.request<Message[]>(
+      `${API_BASE}/messages/conversation/${userId}${query ? `?${query}` : ''}`
+    )
   }
 
   // 获取所有对话列表
@@ -322,8 +350,10 @@ class ApiService {
   }
 
   // 获取评论通知列表
-  async getComments(): Promise<{ comments: any[]; unreadCount: number }> {
-    return this.request<{ comments: any[]; unreadCount: number }>(`${API_BASE}/comments/notifications`)
+  async getComments(): Promise<{ comments: unknown[]; unreadCount: number }> {
+    return this.request<{ comments: unknown[]; unreadCount: number }>(
+      `${API_BASE}/comments/notifications`
+    )
   }
 
   // 标记评论为已读

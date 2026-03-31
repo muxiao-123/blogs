@@ -1,0 +1,30 @@
+# 📌 Git Commit 规范
+#
+# type(scope?): subject
+#
+# Body (可选)
+#
+# Footer (可选)
+#
+# -------------------
+# type 类型:
+#   feat:     新功能
+#   fix:      修复 bug
+#   docs:     文档更新
+#   style:    代码格式（不影响功能）
+#   refactor: 代码重构（不影响功能）
+#   perf:     性能优化
+#   test:     测试相关
+#   build:    构建或依赖更新
+#   ci:       CI 配置
+#   chore:    其他不修改源代码或文档的更改
+#   revert:   回滚
+#   merge:    合并分支
+#
+# 示例:
+#   feat: 添加用户登录功能
+#   fix: 修复首页滚动卡顿问题
+#   docs: 更新 API 文档
+# -------------------
+#
+# 👉 请使用 pnpm commit 或 git commit 命令提交

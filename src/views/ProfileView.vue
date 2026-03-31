@@ -6,7 +6,7 @@
       <div class="profile-cover">
         <div class="cover-gradient"></div>
       </div>
-      
+
       <div class="content-container">
         <!-- 用户信息卡片 -->
         <div class="profile-card">
@@ -14,18 +14,34 @@
             <div class="avatar-wrapper">
               <img :src="formData.avatar" alt="头像" class="profile-avatar" />
               <button class="edit-avatar-btn" @click="showEditModal = true">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+                  ></path>
                   <circle cx="12" cy="13" r="4"></circle>
                 </svg>
               </button>
             </div>
-            
+
             <div class="profile-info">
               <div class="name-row">
                 <h1 class="profile-username">{{ userStore.user?.username }}</h1>
                 <button class="edit-btn" @click="showEditModal = true">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                   </svg>
@@ -36,7 +52,7 @@
               <p class="profile-bio">{{ formData.bio || '这个人很懒，什么都没写~' }}</p>
             </div>
           </div>
-          
+
           <!-- 统计数据 -->
           <div class="stats-row">
             <div class="stat-item">
@@ -53,15 +69,22 @@
             </div>
           </div>
         </div>
-        
+
         <!-- 内容标签页 -->
         <div class="content-tabs">
-          <button 
-            class="tab-btn" 
+          <button
+            class="tab-btn"
             :class="{ active: activeTab === 'articles' }"
             @click="activeTab = 'articles'"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
               <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -70,61 +93,106 @@
             </svg>
             我的文章
           </button>
-          <button 
-            class="tab-btn" 
+          <button
+            class="tab-btn"
             :class="{ active: activeTab === 'drafts' }"
             @click="activeTab = 'drafts'"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
             </svg>
             草稿箱
           </button>
-          <button 
-            class="tab-btn" 
+          <button
+            class="tab-btn"
             :class="{ active: activeTab === 'liked' }"
             @click="activeTab = 'liked'"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+              />
             </svg>
             收藏的文章
           </button>
         </div>
-        
+
         <!-- 文章列表 -->
         <div class="articles-section">
           <div v-if="loading" class="loading-state">
             <div class="loading-spinner"></div>
             <p>加载中...</p>
           </div>
-          
+
           <div v-else-if="activeTab === 'liked' && likedArticles.length === 0" class="empty-state">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+              />
             </svg>
             <p>还没有收藏的文章</p>
             <router-link to="/" class="create-link">开始探索</router-link>
           </div>
-          
-          <div v-else-if="activeTab === 'articles' && userArticles.length === 0" class="empty-state">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+
+          <div
+            v-else-if="activeTab === 'articles' && userArticles.length === 0"
+            class="empty-state"
+          >
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
             </svg>
             <p>还没有发布任何文章</p>
             <router-link to="/create" class="create-link">写一篇新文章</router-link>
           </div>
-          
-          <div v-else-if="activeTab === 'drafts' && draftsArticles.length === 0" class="empty-state">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+
+          <div
+            v-else-if="activeTab === 'drafts' && draftsArticles.length === 0"
+            class="empty-state"
+          >
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
             </svg>
             <p>草稿箱是空的</p>
           </div>
-          
+
           <div v-else>
             <!-- 排序按钮 -->
             <div class="sort-section">
@@ -134,7 +202,14 @@
                 :class="{ active: sortBy === 'publishDate' }"
                 @click="handleSortChange('publishDate')"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <circle cx="12" cy="12" r="10"></circle>
                   <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
@@ -145,7 +220,14 @@
                 :class="{ active: sortBy === 'views' }"
                 @click="handleSortChange('views')"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                   <circle cx="12" cy="12" r="3"></circle>
                 </svg>
@@ -153,69 +235,128 @@
               </button>
               <span class="article-count">({{ currentArticles.length }}篇文章)</span>
             </div>
-          
+
             <div class="article-list">
               <article v-for="article in currentArticles" :key="article.id" class="article-item">
-              <div class="article-cover-wrapper">
-                <router-link :to="activeTab === 'articles' ? `/article/${article.id}` : '#'" class="article-cover-link">
-                  <img :src="article.cover" :alt="article.title" class="article-cover" />
-                </router-link>
-                <!-- 编辑和删除按钮，仅在文章列表显示 -->
-                <div v-if="activeTab === 'articles'" class="article-actions">
-                  <button class="action-btn edit" @click.stop="handleEdit(article.id)" title="编辑">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
-                  </button>
-                  <button class="action-btn delete" @click.stop="confirmDelete(article.id)" title="删除">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polyline points="3 6 5 6 21 6"></polyline>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                  </button>
+                <div class="article-cover-wrapper">
+                  <router-link
+                    :to="activeTab === 'articles' ? `/article/${article.id}` : '#'"
+                    class="article-cover-link"
+                  >
+                    <img :src="article.cover" :alt="article.title" class="article-cover" />
+                  </router-link>
+                  <!-- 编辑和删除按钮，仅在文章列表显示 -->
+                  <div v-if="activeTab === 'articles'" class="article-actions">
+                    <button
+                      class="action-btn edit"
+                      @click.stop="handleEdit(article.id)"
+                      title="编辑"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      </svg>
+                    </button>
+                    <button
+                      class="action-btn delete"
+                      @click.stop="confirmDelete(article.id)"
+                      title="删除"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path
+                          d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div class="article-content">
-                <div class="article-meta">
-                  <span class="article-category">{{ article.category }}</span>
-                  <span class="article-date">{{ formatDate(article.publishDate) }}</span>
+                <div class="article-content">
+                  <div class="article-meta">
+                    <span class="article-category">{{ article.category }}</span>
+                    <span class="article-date">{{ formatDate(article.publishDate) }}</span>
+                  </div>
+                  <router-link :to="`/article/${article.id}`" class="article-title">
+                    {{ article.title }}
+                  </router-link>
+                  <p class="article-excerpt">{{ article.excerpt }}</p>
+                  <div class="article-stats">
+                    <span class="stat">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      {{ article.views }}
+                    </span>
+                    <span class="stat">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                        ></path>
+                      </svg>
+                      {{ article.likes }}
+                    </span>
+                    <span class="stat">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                        ></path>
+                      </svg>
+                      {{ article.comments?.length || 0 }}
+                    </span>
+                    <span class="stat">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                      {{ article.readTime }} min
+                    </span>
+                  </div>
                 </div>
-                <router-link :to="`/article/${article.id}`" class="article-title">
-                  {{ article.title }}
-                </router-link>
-                <p class="article-excerpt">{{ article.excerpt }}</p>
-                <div class="article-stats">
-                  <span class="stat">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                      <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                    {{ article.views }}
-                  </span>
-                  <span class="stat">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                    {{ article.likes }}
-                  </span>
-                  <span class="stat">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    {{ article.comments?.length || 0 }}
-                  </span>
-                  <span class="stat">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    {{ article.readTime }} min
-                  </span>
-                </div>
-              </div>
-            </article>
-          </div>
+              </article>
+            </div>
           </div>
         </div>
       </div>
@@ -225,10 +366,17 @@
     <div class="modal-overlay" v-show="showDeleteModal" @click.self="cancelDelete">
       <div class="delete-modal">
         <div class="delete-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
         </div>
         <h3>确认删除</h3>
@@ -241,57 +389,46 @@
     </div>
 
     <SiteFooter />
-    
+
     <!-- 编辑资料弹窗 -->
     <div class="modal-overlay" v-show="showEditModal" @click.self="showEditModal = false">
       <div class="edit-modal">
         <div class="modal-header">
           <h2>编辑资料</h2>
           <button class="close-btn" @click="showEditModal = false">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
         </div>
-        
+
         <form @submit.prevent="handleSubmit" class="edit-form">
           <div class="form-group">
             <label>用户名</label>
-            <input 
-              type="text" 
-              v-model="formData.username" 
-              placeholder="请输入用户名"
-              required
-            />
+            <input type="text" v-model="formData.username" placeholder="请输入用户名" required />
           </div>
 
           <div class="form-group">
             <label>邮箱</label>
-            <input 
-              type="email" 
-              v-model="formData.email" 
-              placeholder="请输入邮箱"
-              required
-            />
+            <input type="email" v-model="formData.email" placeholder="请输入邮箱" required />
           </div>
 
           <div class="form-group">
             <label>头像链接</label>
-            <input 
-              type="url" 
-              v-model="formData.avatar" 
-              placeholder="请输入头像链接"
-            />
+            <input type="url" v-model="formData.avatar" placeholder="请输入头像链接" />
           </div>
 
           <div class="form-group">
             <label>个人简介</label>
-            <textarea 
-              v-model="formData.bio" 
-              placeholder="请输入个人简介"
-              rows="3"
-            ></textarea>
+            <textarea v-model="formData.bio" placeholder="请输入个人简介" rows="3"></textarea>
           </div>
 
           <div class="error-message" v-if="error">{{ error }}</div>
@@ -366,7 +503,9 @@ const sortedUserArticles = computed(() => {
     console.log('Sorted by views, first article views:', sorted[0]?.views)
     return sorted
   }
-  const sorted = articles.sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
+  const sorted = articles.sort(
+    (a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
+  )
   console.log('Sorted by date, first article date:', sorted[0]?.publishDate)
   return sorted
 })
@@ -377,7 +516,9 @@ const draftsArticles = computed(() => {
   if (sortBy.value === 'views') {
     return articles.sort((a, b) => b.views - a.views)
   }
-  return articles.sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
+  return articles.sort(
+    (a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
+  )
 })
 
 // 喜欢的文章（从API获取收藏）
@@ -388,7 +529,7 @@ const fetchFavoriteArticles = async () => {
   try {
     const response = await fetch(`${API_BASE}/articles/favorites`, {
       headers: {
-        'Authorization': `Bearer ${token}`
+        Authorization: `Bearer ${token}`
       }
     })
     if (response.ok) {
@@ -404,7 +545,9 @@ const likedArticles = computed(() => {
   if (sortBy.value === 'views') {
     return articles.sort((a, b) => b.views - a.views)
   }
-  return articles.sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
+  return articles.sort(
+    (a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
+  )
 })
 
 // 当前活动的文章列表
@@ -441,17 +584,17 @@ const fetchUserArticles = async () => {
     console.log('No user, cannot fetch articles')
     return
   }
-  
+
   loading.value = true
   try {
     const authorName = userStore.user.username
     console.log('Fetching articles for author:', authorName)
-    
+
     const response = await fetch(`${API_BASE}/articles?author=${authorName}`)
     const data = await response.json()
     console.log('Articles response:', data)
     userArticles.value = data
-    
+
     // 获取统计数据
     const statsResponse = await fetch(`${API_BASE}/articles/user/stats?author=${authorName}`)
     stats.value = await statsResponse.json()
@@ -502,7 +645,7 @@ const handleDelete = async () => {
 
   const success = await articleStore.deleteArticle(articleToDelete.value)
   if (success) {
-    userArticles.value = userArticles.value.filter(a => a.id !== articleToDelete.value)
+    userArticles.value = userArticles.value.filter((a) => a.id !== articleToDelete.value)
     stats.value.articleCount--
   }
   showDeleteModal.value = false
@@ -517,7 +660,7 @@ const cancelDelete = () => {
 const handleSubmit = async () => {
   error.value = ''
   success.value = ''
-  
+
   if (!formData.username.trim()) {
     error.value = '用户名不能为空'
     return
@@ -805,7 +948,9 @@ const handleSubmit = async () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {

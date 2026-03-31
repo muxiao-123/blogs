@@ -82,7 +82,7 @@ onMounted(() => {
         <span class="title-line gradient">星辰大海</span>
       </h1>
       <p class="hero-subtitle">
-        分享前端、后端、全栈开发经验<br>
+        分享前端、后端、全栈开发经验<br />
         用代码书写技术人生
       </p>
       <div class="hero-stats" v-if="!loading">
@@ -190,7 +190,12 @@ onMounted(() => {
 }
 
 .title-line.gradient {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-accent));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary),
+    var(--color-accent)
+  );
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

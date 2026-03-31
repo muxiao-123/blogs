@@ -26,7 +26,7 @@ describe('ArticleCard', () => {
     const wrapper = mount(ArticleCard, {
       props: { article: mockArticle }
     })
-    
+
     expect(wrapper.text()).toContain('测试文章标题')
   })
 
@@ -34,7 +34,7 @@ describe('ArticleCard', () => {
     const wrapper = mount(ArticleCard, {
       props: { article: mockArticle }
     })
-    
+
     expect(wrapper.text()).toContain('这是一篇测试文章的摘要内容')
   })
 
@@ -42,7 +42,7 @@ describe('ArticleCard', () => {
     const wrapper = mount(ArticleCard, {
       props: { article: mockArticle }
     })
-    
+
     expect(wrapper.find('.category-tag').exists()).toBe(true)
   })
 
@@ -50,7 +50,7 @@ describe('ArticleCard', () => {
     const wrapper = mount(ArticleCard, {
       props: { article: mockArticle }
     })
-    
+
     expect(wrapper.find('.author-avatar').exists()).toBe(true)
     expect(wrapper.text()).toContain('Test Author')
   })
@@ -59,7 +59,7 @@ describe('ArticleCard', () => {
     const wrapper = mount(ArticleCard, {
       props: { article: mockArticle }
     })
-    
+
     expect(wrapper.text()).toContain('5 分钟')
   })
 })

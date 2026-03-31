@@ -39,7 +39,7 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   // 模拟网络延迟
-  await new Promise(resolve => setTimeout(resolve, 300))
+  await new Promise((resolve) => setTimeout(resolve, 300))
 
   const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName.value || 'anonymous'}`
 
@@ -72,8 +72,15 @@ const handleCommentLike = (commentId: string) => {
 <template>
   <section class="comment-section">
     <h3 class="section-title">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
       评论
       <span class="comment-count">{{ comments.length }}</span>
@@ -98,7 +105,10 @@ const handleCommentLike = (commentId: string) => {
         :disabled="isSubmitting"
       ></textarea>
       <div class="form-footer">
-        <span class="char-count" :class="{ warning: commentInput.length > 0 && commentInput.length < 5 }">
+        <span
+          class="char-count"
+          :class="{ warning: commentInput.length > 0 && commentInput.length < 5 }"
+        >
           {{ commentInput.length > 0 ? `${commentInput.length}/500` : '最少5个字' }}
         </span>
         <button
@@ -114,11 +124,7 @@ const handleCommentLike = (commentId: string) => {
 
     <!-- 评论列表 -->
     <div class="comments-list" v-if="comments.length > 0">
-      <article
-        v-for="comment in comments"
-        :key="comment.id"
-        class="comment-item"
-      >
+      <article v-for="comment in comments" :key="comment.id" class="comment-item">
         <img :src="comment.author.avatar" :alt="comment.author.name" class="comment-avatar" />
         <div class="comment-content">
           <div class="comment-header">
@@ -128,15 +134,33 @@ const handleCommentLike = (commentId: string) => {
           <p class="comment-text">{{ comment.content }}</p>
           <div class="comment-actions">
             <button class="action-btn" @click="handleCommentLike(comment.id)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
+                />
               </svg>
               {{ comment.likes }}
             </button>
             <button class="action-btn delete" @click="handleDelete(comment.id)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                />
               </svg>
             </button>
           </div>
@@ -278,7 +302,9 @@ const handleCommentLike = (commentId: string) => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .comments-list {

@@ -1,0 +1,37 @@
+{
+  "path": "cz-git",
+  "config": {
+    "prompt": {
+      "messages": {
+        "type": "选择你要提交的类型:",
+        "scope": "选择一个提交范围 (可选):",
+        "customScope": "输入自定义的提交范围:",
+        "subject": "填写简短描述:",
+        "body": "详细描述 (可选)。使用 \"|\" 换行:",
+        "breakingBreaking": "列出所有破坏性变更 (可选)。使用 \"|\" 换行:",
+        "breakingBody": "详细描述破坏性变更 (可选):",
+        "footerPrefixesSelect": "选择关联 Issue 类型 (可选):",
+        "customFooterPrefix": "输入自定义的 Issue 类型前缀:",
+        "footer": "关联 Issue (可选)。例如: #31, #I32PRF:",
+        "generatingByAI": "正在通过 AI 生成你的提交信息...",
+        "done": "信息确认完毕!",
+        "abort": "确定要取消吗?"
+      },
+      "types": [
+        { "value": "feat", "name": "feat:     新功能", "emoji": "✨" },
+        { "value": "fix", "name": "fix:      修复 bug", "emoji": "🐛" },
+        { "value": "docs", "name": "docs:     文档更新", "emoji": "📝" },
+        { "value": "style", "name": "style:    代码格式", "emoji": "💄" },
+        { "value": "refactor", "name": "refactor: 代码重构", "emoji": "♻️" },
+        { "value": "perf", "name": "perf:     性能优化", "emoji": "⚡️" },
+        { "value": "test", "name": "test:     测试相关", "emoji": "✅" },
+        { "value": "build", "name": "build:    构建或依赖", "emoji": "📦️" },
+        { "value": "ci", "name": "ci:       CI 配置", "emoji": "🔧" },
+        { "value": "chore", "name": "chore:    其他更改", "emoji": "🔨" },
+        { "value": "revert", "name": "revert:   回滚", "emoji": "⏪" },
+        { "value": "merge", "name": "merge:    合并分支", "emoji": "🔀" }
+      ],
+      "useEmoji": false
+    }
+  }
+}

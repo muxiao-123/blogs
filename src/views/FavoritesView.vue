@@ -21,7 +21,7 @@ onMounted(async () => {
   try {
     const response = await fetch(`${API_BASE}/articles/favorites`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        Authorization: `Bearer ${localStorage.getItem('token')}`
       }
     })
     if (response.ok) {
@@ -39,11 +39,11 @@ const removeFavorite = async (articleId: string) => {
     const response = await fetch(`${API_BASE}/articles/${articleId}/favorite`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        Authorization: `Bearer ${localStorage.getItem('token')}`
       }
     })
     if (response.ok) {
-      favoriteArticles.value = favoriteArticles.value.filter(a => a.id !== articleId)
+      favoriteArticles.value = favoriteArticles.value.filter((a) => a.id !== articleId)
     }
   } catch (e) {
     console.error('Failed to remove favorite:', e)
@@ -60,24 +60,29 @@ const clearAllFavorites = async () => {
 <template>
   <div class="favorites-view">
     <NavBar />
-    
+
     <main class="favorites-main">
       <div class="favorites-container">
         <header class="favorites-header">
           <div class="header-left">
             <h1 class="page-title">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="2">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="#fbbf24"
+                stroke="#fbbf24"
+                stroke-width="2"
+              >
+                <polygon
+                  points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                />
               </svg>
               我的收藏
             </h1>
             <p class="favorites-count">共收藏了 {{ favoriteArticles.length }} 篇文章</p>
           </div>
-          <button 
-            v-if="favoriteArticles.length > 0"
-            class="clear-btn" 
-            @click="clearAllFavorites"
-          >
+          <button v-if="favoriteArticles.length > 0" class="clear-btn" @click="clearAllFavorites">
             清空收藏
           </button>
         </header>
@@ -88,20 +93,19 @@ const clearAllFavorites = async () => {
         </div>
 
         <div class="favorites-grid" v-else-if="favoriteArticles.length > 0">
-          <div 
-            v-for="article in favoriteArticles" 
-            :key="article.id" 
-            class="favorite-item"
-          >
+          <div v-for="article in favoriteArticles" :key="article.id" class="favorite-item">
             <ArticleCard :article="article" />
-            <button 
-              class="remove-btn" 
-              @click.stop="removeFavorite(article.id)"
-              title="取消收藏"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
+            <button class="remove-btn" @click.stop="removeFavorite(article.id)" title="取消收藏">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
           </div>
@@ -111,9 +115,7 @@ const clearAllFavorites = async () => {
           <div class="empty-icon">⭐</div>
           <h2>还没有收藏文章</h2>
           <p>去发现喜欢的文章并收藏起来吧</p>
-          <button class="explore-btn" @click="router.push('/')">
-            开始探索
-          </button>
+          <button class="explore-btn" @click="router.push('/')">开始探索</button>
         </div>
       </div>
     </main>
@@ -236,7 +238,9 @@ const clearAllFavorites = async () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {

@@ -8,14 +8,27 @@ const localQuery = ref(articleStore.searchQuery)
 const handleSearch = () => {
   articleStore.setSearchQuery(localQuery.value)
 }
+
+const clearSearch = () => {
+  localQuery.value = ''
+  articleStore.setSearchQuery('')
+}
 </script>
 
 <template>
   <div class="search-bar">
     <div class="search-input-wrapper">
-      <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      <svg
+        class="search-icon"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
       <input
         v-model="localQuery"
@@ -25,13 +38,7 @@ const handleSearch = () => {
         @input="handleSearch"
         @keyup.enter="handleSearch"
       />
-      <button
-        v-if="localQuery"
-        class="clear-btn"
-        @click="localQuery = ''; articleStore.setSearchQuery('')"
-      >
-        ×
-      </button>
+      <button v-if="localQuery" class="clear-btn" @click="clearSearch">×</button>
     </div>
   </div>
 </template>

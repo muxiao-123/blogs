@@ -37,17 +37,17 @@ const handleCoverError = () => {
 // 发消息给作者
 const handleMessageAuthor = async () => {
   if (!article.value?.author?.name) return
-  
+
   // 如果不是登录状态，跳转到登录页
   if (!userStore.isLoggedIn) {
     router.push(`/auth?redirect=${route.fullPath}`)
     return
   }
-  
+
   // 获取作者ID
   try {
     const users = await api.searchUsers(article.value.author.name, 1)
-    const author = users.find(u => u.username === article.value?.author?.name)
+    const author = users.find((u) => u.username === article.value?.author?.name)
     if (author) {
       authorUserId.value = author.id
       authorUsername.value = author.username
@@ -63,7 +63,7 @@ const handleMessageAuthor = async () => {
 // 发送消息
 const sendMessage = async () => {
   if (!messageContent.value.trim() || !authorUserId.value) return
-  
+
   sendingMessage.value = true
   try {
     await api.sendMessage(authorUserId.value, authorUsername.value, messageContent.value.trim())
@@ -114,7 +114,7 @@ const handleCommentAdded = async () => {
 
 const categoryInfo = computed(() => {
   if (!article.value) return categories[3]
-  return categories.find(c => c.key === article.value!.category) || categories[3]
+  return categories.find((c) => c.key === article.value!.category) || categories[3]
 })
 
 // 获取相关文章（优先匹配度高的，没有则随机）
@@ -125,10 +125,10 @@ const relatedArticles = computed(() => {
   const allArticles = articleStore.articles
 
   // 过滤掉当前文章
-  let candidates = allArticles.filter(a => a.id !== currentArticle.id)
+  let candidates = allArticles.filter((a) => a.id !== currentArticle.id)
 
   // 计算每篇文章的相关度分数
-  const scored = candidates.map(a => {
+  const scored = candidates.map((a) => {
     let score = 0
 
     // 同分类 +3 分
@@ -137,7 +137,7 @@ const relatedArticles = computed(() => {
     }
 
     // 共同标签每个 +2 分
-    const commonTags = a.tags?.filter(tag => currentArticle.tags?.includes(tag)) || []
+    const commonTags = a.tags?.filter((tag) => currentArticle.tags?.includes(tag)) || []
     score += commonTags.length * 2
 
     // 同作者 +1 分
@@ -152,13 +152,13 @@ const relatedArticles = computed(() => {
   scored.sort((a, b) => b.score - a.score)
 
   // 取相关度最高的
-  let result = scored.filter(s => s.score > 0).map(s => s.article)
+  let result = scored.filter((s) => s.score > 0).map((s) => s.article)
 
   // 如果不足3篇，随机补充
   if (result.length < 3) {
     const remaining = scored
-      .filter(s => s.score === 0)
-      .map(s => s.article)
+      .filter((s) => s.score === 0)
+      .map((s) => s.article)
       .sort(() => Math.random() - 0.5)
 
     result = [...result, ...remaining].slice(0, 3)
@@ -234,11 +234,14 @@ onMounted(async () => {
 })
 
 // 监听路由变化，解决前进/后退时页面不更新的问题
-watch(() => route.params.id, async (newId) => {
-  if (newId) {
-    await loadArticle()
+watch(
+  () => route.params.id,
+  async (newId) => {
+    if (newId) {
+      await loadArticle()
+    }
   }
-})
+)
 
 const scrollToSection = (id: string) => {
   const el = document.getElementById(id)
@@ -317,10 +320,7 @@ const renderContent = (content: string): string => {
       </div>
       <div class="header-content">
         <div class="article-meta-top">
-          <span
-            class="category-badge"
-            :style="{ background: categoryInfo.color }"
-          >
+          <span class="category-badge" :style="{ background: categoryInfo.color }">
             {{ categoryInfo.label }}
           </span>
           <span class="publish-date">{{ formatDate(article.publishDate) }}</span>
@@ -336,16 +336,30 @@ const renderContent = (content: string): string => {
           </div>
           <div class="article-stats">
             <span class="stat">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12,6 12,12 16,14"/>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12,6 12,12 16,14" />
               </svg>
               {{ article.readTime }} 分钟阅读
             </span>
             <span class="stat">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
               </svg>
               {{ article.views }} 阅读
             </span>
@@ -376,12 +390,7 @@ const renderContent = (content: string): string => {
 
         <div class="article-tags" v-if="article.tags && article.tags.length > 0">
           <span class="tags-label">标签:</span>
-          <router-link
-            v-for="tag in article.tags"
-            :key="tag"
-            :to="`/tag/${tag}`"
-            class="tag"
-          >
+          <router-link v-for="tag in article.tags" :key="tag" :to="`/tag/${tag}`" class="tag">
             {{ tag }}
           </router-link>
         </div>
@@ -399,9 +408,7 @@ const renderContent = (content: string): string => {
             :initial-favorites="article?.favorites || 0"
             @favorite-change="handleFavoriteChange"
           />
-          <button class="back-btn" @click="router.push('/')">
-            ← 返回首页
-          </button>
+          <button class="back-btn" @click="router.push('/')">← 返回首页</button>
         </div>
       </article>
 
@@ -425,20 +432,29 @@ const renderContent = (content: string): string => {
               <span class="author-title">技术博主</span>
             </div>
           </div>
-          <p class="author-bio">{{ article?.author?.bio || '热爱技术，分享开发经验，探索技术的星辰大海。' }}</p>
-          
+          <p class="author-bio">
+            {{ article?.author?.bio || '热爱技术，分享开发经验，探索技术的星辰大海。' }}
+          </p>
+
           <!-- 发消息按钮 -->
-          <button 
+          <button
             v-if="userStore.isLoggedIn && article?.author?.name !== userStore.user?.username"
             class="message-author-btn"
             @click="handleMessageAuthor"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
             发消息
           </button>
-          
+
           <!-- 作者统计数据 -->
           <div class="author-stats">
             <div class="author-stat">
@@ -525,31 +541,38 @@ const renderContent = (content: string): string => {
     <p>抱歉，您访问的文章不存在或已被删除。</p>
     <router-link to="/" class="back-home">返回首页</router-link>
   </div>
-  
+
   <!-- 发消息弹窗 -->
   <div v-if="showMessageModal" class="message-modal-overlay" @click.self="showMessageModal = false">
     <div class="message-modal">
       <div class="modal-header">
         <h3>发消息给 {{ authorUsername }}</h3>
         <button class="close-btn" @click="showMessageModal = false">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
       </div>
       <div class="modal-body">
-        <textarea 
-          v-model="messageContent" 
-          placeholder="输入消息内容..." 
+        <textarea
+          v-model="messageContent"
+          placeholder="输入消息内容..."
           rows="5"
           autofocus
         ></textarea>
       </div>
       <div class="modal-footer">
         <button class="cancel-btn" @click="showMessageModal = false">取消</button>
-        <button 
-          class="send-btn" 
+        <button
+          class="send-btn"
           @click="sendMessage"
           :disabled="!messageContent.trim() || sendingMessage"
         >
@@ -986,7 +1009,7 @@ const renderContent = (content: string): string => {
   color: var(--color-text-primary);
   line-height: 1.4;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1218,7 +1241,9 @@ const renderContent = (content: string): string => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading p {

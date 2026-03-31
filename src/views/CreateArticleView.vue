@@ -84,11 +84,15 @@ const clearDraft = () => {
 const isRestoring = ref(false)
 
 // 监听表单变化自动保存
-watch(formData, () => {
-  if (!isRestoring.value) {
-    saveDraft()
-  }
-}, { deep: true })
+watch(
+  formData,
+  () => {
+    if (!isRestoring.value) {
+      saveDraft()
+    }
+  },
+  { deep: true }
+)
 
 const tagInput = ref('')
 const isSubmitting = ref(false)
@@ -180,7 +184,7 @@ const addTag = () => {
 }
 
 const removeTag = (tag: string) => {
-  formData.value.tags = formData.value.tags.filter(t => t !== tag)
+  formData.value.tags = formData.value.tags.filter((t) => t !== tag)
 }
 
 const selectCategory = (category: Category) => {
@@ -292,8 +296,15 @@ const goBack = () => {
       <div class="create-container">
         <header class="create-header">
           <button class="back-link" @click="goBack">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
             返回首页
           </button>
@@ -363,10 +374,18 @@ const goBack = () => {
                 @change="handleFileSelect"
               />
               <div class="upload-btn" @click="triggerFileInput">
-                <svg v-if="!isUploading" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/>
-                  <line x1="12" y1="3" x2="12" y2="15"/>
+                <svg
+                  v-if="!isUploading"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 <span v-if="isUploading" class="upload-spinner"></span>
                 <span>{{ isUploading ? '上传中...' : '上传图片' }}</span>
@@ -375,12 +394,22 @@ const goBack = () => {
             </div>
 
             <!-- 自定义封面预览 -->
-            <div v-if="formData.cover && !coverOptions.includes(formData.cover)" class="custom-cover-preview">
+            <div
+              v-if="formData.cover && !coverOptions.includes(formData.cover)"
+              class="custom-cover-preview"
+            >
               <img :src="formData.cover" alt="自定义封面" />
               <button type="button" class="remove-cover" @click="removeCustomCover">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18"/>
-                  <line x1="6" y1="6" x2="18" y2="18"/>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </div>
@@ -396,8 +425,15 @@ const goBack = () => {
               >
                 <img :src="cover" :alt="`Cover ${index + 1}`" loading="lazy" />
                 <div class="cover-check">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                    <polyline points="20 6 9 17 4 12"/>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
               </button>
@@ -438,9 +474,7 @@ const goBack = () => {
               :class="{ error: errors.content }"
             />
             <span v-if="errors.content" class="error-message">{{ errors.content }}</span>
-            <div class="content-hint">
-              支持富文本格式：标题、粗体、斜体、代码、链接、列表等
-            </div>
+            <div class="content-hint">支持富文本格式：标题、粗体、斜体、代码、链接、列表等</div>
           </div>
 
           <!-- 提交按钮 -->
@@ -448,7 +482,15 @@ const goBack = () => {
             <button type="button" class="cancel-btn" @click="goBack">取消</button>
             <button type="submit" class="submit-btn" :disabled="isSubmitting || isLoading">
               <span v-if="isSubmitting" class="spinner"></span>
-              {{ isSubmitting ? (isEditMode ? '保存中...' : '发布中...') : (isEditMode ? '保存修改' : '发布文章') }}
+              {{
+                isSubmitting
+                  ? isEditMode
+                    ? '保存中...'
+                    : '发布中...'
+                  : isEditMode
+                    ? '保存修改'
+                    : '发布文章'
+              }}
             </button>
           </div>
 
@@ -854,7 +896,9 @@ const goBack = () => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .submit-error {

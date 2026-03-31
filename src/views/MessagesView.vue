@@ -2,205 +2,274 @@
   <div class="messages-page">
     <NavBar />
     <main class="messages-main">
-    <div class="messages-container">
-      <!-- 对话列表 -->
-      <div class="conversations-panel" :class="{ hidden: selectedUser }">
-        <div class="panel-header">
-          <h1>消息</h1>
-          <!-- 分类切换 -->
-          <div class="category-tabs">
-            <button 
-              class="tab-btn" 
-              :class="{ active: activeCategory === 'private' }"
-              @click="activeCategory = 'private'"
-            >
-              私信
-            </button>
-            <button 
-              class="tab-btn" 
-              :class="{ active: activeCategory === 'comment' }"
-              @click="activeCategory = 'comment'"
-            >
-              评论
-              <span v-if="commentUnreadCount > 0" class="tab-badge">{{ commentUnreadCount }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 私信列表 -->
-        <template v-if="activeCategory === 'private'">
-          <div class="panel-sub-header">
-            <button class="new-chat-btn" @click="showSearchModal = true">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              新建对话
-            </button>
-          </div>
-        
-        <!-- 搜索用户弹窗 -->
-        <div v-if="showSearchModal" class="search-modal">
-          <div class="search-modal-content">
-            <div class="search-header">
-              <h3>新建对话</h3>
-              <button class="close-btn" @click="showSearchModal = false">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
+      <div class="messages-container">
+        <!-- 对话列表 -->
+        <div class="conversations-panel" :class="{ hidden: selectedUser }">
+          <div class="panel-header">
+            <h1>消息</h1>
+            <!-- 分类切换 -->
+            <div class="category-tabs">
+              <button
+                class="tab-btn"
+                :class="{ active: activeCategory === 'private' }"
+                @click="activeCategory = 'private'"
+              >
+                私信
+              </button>
+              <button
+                class="tab-btn"
+                :class="{ active: activeCategory === 'comment' }"
+                @click="activeCategory = 'comment'"
+              >
+                评论
+                <span v-if="commentUnreadCount > 0" class="tab-badge">{{
+                  commentUnreadCount
+                }}</span>
               </button>
             </div>
-            <div class="search-input-wrapper">
-              <input 
-                v-model="searchQuery" 
-                type="text" 
-                placeholder="搜索用户名..." 
-                @input="handleSearch"
-                autofocus
-              />
-            </div>
-            <div class="search-results" v-if="searchResults.length > 0">
-              <div 
-                v-for="user in searchResults" 
-                :key="user.id" 
-                class="search-result-item"
-                @click="startNewChat(user)"
-              >
-                <img :src="user.avatar || defaultAvatar" :alt="user.username" class="avatar" />
-                <span class="username">{{ user.username }}</span>
-              </div>
-            </div>
-            <div v-else-if="searchQuery && searchResults.length === 0 && !searching" class="no-results">
-              未找到用户
-            </div>
           </div>
-        </div>
-        
-        <div class="conversations-list" v-if="conversations.length > 0">
-          <div 
-            v-for="conv in conversations" 
-            :key="conv.userId" 
-            class="conversation-item"
-            :class="{ unread: conv.unreadCount > 0 }"
-            @click="selectConversation(conv)"
-          >
-            <div class="avatar-wrapper">
-              <img :src="conv.avatar || defaultAvatar" :alt="conv.username" class="avatar" />
-              <span v-if="conv.unreadCount > 0" class="unread-badge">{{ conv.unreadCount }}</span>
-            </div>
-            <div class="conversation-content">
-              <div class="conversation-header">
-                <span class="username">{{ conv.username }}</span>
-                <span class="time">{{ formatTime(conv.lastMessage.createdAt) }}</span>
-              </div>
-              <p class="last-message">{{ conv.lastMessage.content }}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div v-else class="empty-state">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          <p>暂无私信</p>
-        </div>
-        </template>
 
-        <!-- 评论列表 -->
-        <template v-if="activeCategory === 'comment'">
-          <div class="comments-list" v-if="comments.length > 0">
-            <div 
-              v-for="comment in comments" 
-              :key="comment.id" 
-              class="comment-item"
-              :class="{ unread: !comment.isRead }"
-              @click="viewComment(comment)"
-            >
-              <div class="avatar-wrapper">
-                <img :src="comment.author.avatar || defaultAvatar" :alt="comment.author.name" class="avatar" />
-                <span v-if="!comment.isRead" class="unread-dot"></span>
-              </div>
-              <div class="comment-content">
-                <div class="comment-header">
-                  <span class="username">{{ comment.author.name }}</span>
-                  <span class="article-title">评论了我的文章</span>
+          <!-- 私信列表 -->
+          <template v-if="activeCategory === 'private'">
+            <div class="panel-sub-header">
+              <button class="new-chat-btn" @click="showSearchModal = true">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                新建对话
+              </button>
+            </div>
+
+            <!-- 搜索用户弹窗 -->
+            <div v-if="showSearchModal" class="search-modal">
+              <div class="search-modal-content">
+                <div class="search-header">
+                  <h3>新建对话</h3>
+                  <button class="close-btn" @click="showSearchModal = false">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
                 </div>
-                <p class="comment-text">{{ comment.content }}</p>
-                <span class="time">{{ formatTime(comment.createdAt) }}</span>
+                <div class="search-input-wrapper">
+                  <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="搜索用户名..."
+                    @input="handleSearch"
+                    autofocus
+                  />
+                </div>
+                <div class="search-results" v-if="searchResults.length > 0">
+                  <div
+                    v-for="user in searchResults"
+                    :key="user.id"
+                    class="search-result-item"
+                    @click="startNewChat(user)"
+                  >
+                    <img :src="user.avatar || defaultAvatar" :alt="user.username" class="avatar" />
+                    <span class="username">{{ user.username }}</span>
+                  </div>
+                </div>
+                <div
+                  v-else-if="searchQuery && searchResults.length === 0 && !searching"
+                  class="no-results"
+                >
+                  未找到用户
+                </div>
               </div>
             </div>
-          </div>
-          <div v-else class="empty-state">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-            </svg>
-            <p>暂无评论通知</p>
-          </div>
-        </template>
-      </div>
 
-      <!-- 聊天详情 -->
-      <div class="chat-panel" :class="{ active: selectedUser }">
-        <div class="chat-header" v-if="selectedUser">
-          <button class="back-btn" @click="goBack">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-          </button>
-          <img :src="selectedUser.avatar || defaultAvatar" :alt="selectedUser.username" class="chat-avatar" />
-          <span class="chat-username">{{ selectedUser.username }}</span>
+            <div class="conversations-list" v-if="conversations.length > 0">
+              <div
+                v-for="conv in conversations"
+                :key="conv.userId"
+                class="conversation-item"
+                :class="{ unread: conv.unreadCount > 0 }"
+                @click="selectConversation(conv)"
+              >
+                <div class="avatar-wrapper">
+                  <img :src="conv.avatar || defaultAvatar" :alt="conv.username" class="avatar" />
+                  <span v-if="conv.unreadCount > 0" class="unread-badge">{{
+                    conv.unreadCount
+                  }}</span>
+                </div>
+                <div class="conversation-content">
+                  <div class="conversation-header">
+                    <span class="username">{{ conv.username }}</span>
+                    <span class="time">{{ formatTime(conv.lastMessage.createdAt) }}</span>
+                  </div>
+                  <p class="last-message">{{ conv.lastMessage.content }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div v-else class="empty-state">
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <p>暂无私信</p>
+            </div>
+          </template>
+
+          <!-- 评论列表 -->
+          <template v-if="activeCategory === 'comment'">
+            <div class="comments-list" v-if="comments.length > 0">
+              <div
+                v-for="comment in comments"
+                :key="comment.id"
+                class="comment-item"
+                :class="{ unread: !comment.isRead }"
+                @click="viewComment(comment)"
+              >
+                <div class="avatar-wrapper">
+                  <img
+                    :src="comment.author.avatar || defaultAvatar"
+                    :alt="comment.author.name"
+                    class="avatar"
+                  />
+                  <span v-if="!comment.isRead" class="unread-dot"></span>
+                </div>
+                <div class="comment-content">
+                  <div class="comment-header">
+                    <span class="username">{{ comment.author.name }}</span>
+                    <span class="article-title">评论了我的文章</span>
+                  </div>
+                  <p class="comment-text">{{ comment.content }}</p>
+                  <span class="time">{{ formatTime(comment.createdAt) }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="empty-state">
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
+                ></path>
+              </svg>
+              <p>暂无评论通知</p>
+            </div>
+          </template>
         </div>
-        
-        <div class="messages-list" ref="messagesListRef" v-if="selectedUser">
-          <div 
-            v-for="msg in messages" 
-            :key="msg.id" 
-            class="message"
-            :class="{ sent: msg.senderId === currentUserId, received: msg.senderId !== currentUserId }"
-          >
-            <img 
-              v-if="msg.senderId !== currentUserId" 
-              :src="msg.senderAvatar || defaultAvatar" 
-              :alt="msg.senderUsername" 
-              class="message-avatar" 
+
+        <!-- 聊天详情 -->
+        <div class="chat-panel" :class="{ active: selectedUser }">
+          <div class="chat-header" v-if="selectedUser">
+            <button class="back-btn" @click="goBack">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <img
+              :src="selectedUser.avatar || defaultAvatar"
+              :alt="selectedUser.username"
+              class="chat-avatar"
             />
-            <div class="message-content">
-              <p>{{ msg.content }}</p>
-              <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
+            <span class="chat-username">{{ selectedUser.username }}</span>
+          </div>
+
+          <div class="messages-list" ref="messagesListRef" v-if="selectedUser">
+            <div
+              v-for="msg in messages"
+              :key="msg.id"
+              class="message"
+              :class="{
+                sent: msg.senderId === currentUserId,
+                received: msg.senderId !== currentUserId
+              }"
+            >
+              <img
+                v-if="msg.senderId !== currentUserId"
+                :src="msg.senderAvatar || defaultAvatar"
+                :alt="msg.senderUsername"
+                class="message-avatar"
+              />
+              <div class="message-content">
+                <p>{{ msg.content }}</p>
+                <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
+              </div>
+            </div>
+
+            <div v-if="messages.length === 0" class="no-messages">
+              <p>暂无消息记录，开始聊天吧</p>
             </div>
           </div>
-          
-          <div v-if="messages.length === 0" class="no-messages">
-            <p>暂无消息记录，开始聊天吧</p>
+
+          <div class="message-input" v-if="selectedUser">
+            <input
+              v-model="newMessage"
+              type="text"
+              placeholder="输入消息..."
+              @keyup.enter="sendMessage"
+              :disabled="sending"
+            />
+            <button @click="sendMessage" :disabled="!newMessage.trim() || sending">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+
+          <!-- 未选择对话时的提示 -->
+          <div class="no-chat-selected" v-if="!selectedUser">
+            <svg
+              width="80"
+              height="80"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <p>选择一个对话开始聊天</p>
           </div>
         </div>
-        
-        <div class="message-input" v-if="selectedUser">
-          <input 
-            v-model="newMessage" 
-            type="text" 
-            placeholder="输入消息..." 
-            @keyup.enter="sendMessage"
-            :disabled="sending"
-          />
-          <button @click="sendMessage" :disabled="!newMessage.trim() || sending">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-          </button>
-        </div>
-        
-        <!-- 未选择对话时的提示 -->
-        <div class="no-chat-selected" v-if="!selectedUser">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-          </svg>
-          <p>选择一个对话开始聊天</p>
-        </div>
       </div>
-    </div>
     </main>
   </div>
 </template>
@@ -233,7 +302,8 @@ const searchResults = ref<User[]>([])
 const searching = ref(false)
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
-const defaultAvatar = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ccc"%3E%3Ccircle cx="12" cy="8" r="4"/%3E%3Cpath d="M12 14c-4 0-8 2-8 4v2h16v-2c0-2-4-4-8-4z"/%3E%3C/svg%3E'
+const defaultAvatar =
+  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ccc"%3E%3Ccircle cx="12" cy="8" r="4"/%3E%3Cpath d="M12 14c-4 0-8 2-8 4v2h16v-2c0-2-4-4-8-4z"/%3E%3C/svg%3E'
 
 const currentUserId = computed(() => userStore.user?.id || '')
 
@@ -246,7 +316,7 @@ const formatTime = (dateStr: string) => {
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  
+
   if (days === 0) {
     return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
   } else if (days === 1) {
@@ -300,16 +370,16 @@ const selectConversation = async (conv: Conversation) => {
     username: conv.username,
     avatar: conv.avatar
   }
-  
+
   // 标记为已读
   if (conv.unreadCount > 0) {
     await api.markAsRead(conv.userId)
     conv.unreadCount = 0
   }
-  
+
   // 加载消息
   await loadMessages()
-  
+
   // 移动端滚动到顶部
   await nextTick()
   scrollToBottom()
@@ -317,7 +387,7 @@ const selectConversation = async (conv: Conversation) => {
 
 const loadMessages = async () => {
   if (!selectedUser.value) return
-  
+
   try {
     messages.value = await api.getConversation(selectedUser.value.userId)
     // 反转数组，最新的在后面
@@ -329,16 +399,16 @@ const loadMessages = async () => {
 
 const sendMessage = async () => {
   if (!newMessage.value.trim() || !selectedUser.value || sending.value) return
-  
+
   sending.value = true
-  
+
   try {
     await api.sendMessage(
       selectedUser.value.userId,
       selectedUser.value.username,
       newMessage.value.trim()
     )
-    
+
     newMessage.value = ''
     await loadMessages()
     await loadConversations()
@@ -366,7 +436,7 @@ const goBack = () => {
 const handleMarkAllRead = async () => {
   try {
     await api.markAllAsRead()
-    conversations.value.forEach(conv => conv.unreadCount = 0)
+    conversations.value.forEach((conv) => (conv.unreadCount = 0))
   } catch (e) {
     console.error('标记全部已读失败:', e)
   }
@@ -376,18 +446,18 @@ const handleSearch = async () => {
   if (searchTimeout) {
     clearTimeout(searchTimeout)
   }
-  
+
   if (!searchQuery.value.trim()) {
     searchResults.value = []
     return
   }
-  
+
   searchTimeout = setTimeout(async () => {
     searching.value = true
     try {
       searchResults.value = await api.searchUsers(searchQuery.value.trim())
       // 过滤掉当前用户
-      searchResults.value = searchResults.value.filter(u => u.id !== currentUserId.value)
+      searchResults.value = searchResults.value.filter((u) => u.id !== currentUserId.value)
     } catch (e) {
       console.error('搜索用户失败:', e)
       searchResults.value = []
@@ -413,11 +483,14 @@ onMounted(() => {
   loadConversations()
 })
 
-watch(() => userStore.isLoggedIn, (loggedIn) => {
-  if (loggedIn) {
-    loadConversations()
+watch(
+  () => userStore.isLoggedIn,
+  (loggedIn) => {
+    if (loggedIn) {
+      loadConversations()
+    }
   }
-})
+)
 </script>
 
 <style scoped>
@@ -757,7 +830,9 @@ watch(() => userStore.isLoggedIn, (loggedIn) => {
   border-radius: 24px;
   color: white;
   cursor: pointer;
-  transition: transform 0.2s, opacity 0.2s;
+  transition:
+    transform 0.2s,
+    opacity 0.2s;
 }
 
 .message-input button:hover:not(:disabled) {
@@ -997,35 +1072,35 @@ watch(() => userStore.isLoggedIn, (loggedIn) => {
   .messages-main {
     padding-top: 70px;
   }
-  
+
   .messages-container {
     flex-direction: column;
     height: calc(100vh - 120px);
   }
-  
+
   .conversations-panel.hidden {
     display: none;
   }
-  
+
   .chat-panel {
     flex: 1;
     border-radius: 16px;
   }
-  
+
   .back-btn {
     display: block;
   }
-  
+
   .chat-panel:not(.active) .chat-header,
   .chat-panel:not(.active) .messages-list,
   .chat-panel:not(.active) .message-input {
     display: none;
   }
-  
+
   .no-chat-selected {
     display: flex;
   }
-  
+
   .chat-panel.active .no-chat-selected {
     display: none;
   }

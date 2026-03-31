@@ -58,19 +58,19 @@ export const useArticleStore = defineStore('articles', () => {
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
       result = result.filter(
-        article =>
+        (article) =>
           article.title.toLowerCase().includes(query) ||
           article.excerpt.toLowerCase().includes(query)
       )
     }
 
     if (selectedCategory.value) {
-      result = result.filter(article => article.category === selectedCategory.value)
+      result = result.filter((article) => article.category === selectedCategory.value)
     }
 
     if (selectedTags.value.length > 0) {
-      result = result.filter(article =>
-        selectedTags.value.some(tag => article.tags.includes(tag))
+      result = result.filter((article) =>
+        selectedTags.value.some((tag) => article.tags.includes(tag))
       )
     }
 
@@ -79,7 +79,9 @@ export const useArticleStore = defineStore('articles', () => {
       result.sort((a, b) => (b.views || 0) - (a.views || 0))
     } else {
       // 默认按发布时间排序（最新的在前）
-      result.sort((a, b) => new Date(b.publishDate || '').getTime() - new Date(a.publishDate || '').getTime())
+      result.sort(
+        (a, b) => new Date(b.publishDate || '').getTime() - new Date(a.publishDate || '').getTime()
+      )
     }
 
     return result
@@ -106,14 +108,14 @@ export const useArticleStore = defineStore('articles', () => {
 
   const allTags = computed(() => {
     const tagSet = new Set<string>()
-    articles.value.forEach(article => {
-      article.tags.forEach(tag => tagSet.add(tag))
+    articles.value.forEach((article) => {
+      article.tags.forEach((tag) => tagSet.add(tag))
     })
     return Array.from(tagSet)
   })
 
   const getArticleById = (id: string) => {
-    return articles.value.find(article => article.id === id)
+    return articles.value.find((article) => article.id === id)
   }
 
   const setSearchQuery = (query: string) => {
@@ -159,10 +161,13 @@ export const useArticleStore = defineStore('articles', () => {
   }
 
   // 更新文章
-  const updateArticle = async (id: string, input: Partial<CreateArticleInput>): Promise<Article | null> => {
+  const updateArticle = async (
+    id: string,
+    input: Partial<CreateArticleInput>
+  ): Promise<Article | null> => {
     try {
       const updated = await api.updateArticle(id, input)
-      const index = articles.value.findIndex(a => a.id === id)
+      const index = articles.value.findIndex((a) => a.id === id)
       if (index !== -1) {
         articles.value[index] = updated
       }
@@ -177,7 +182,7 @@ export const useArticleStore = defineStore('articles', () => {
   const deleteArticle = async (id: string): Promise<boolean> => {
     try {
       await api.deleteArticle(id)
-      articles.value = articles.value.filter(a => a.id !== id)
+      articles.value = articles.value.filter((a) => a.id !== id)
       return true
     } catch (e) {
       error.value = e instanceof Error ? e.message : '删除失败'
@@ -189,7 +194,7 @@ export const useArticleStore = defineStore('articles', () => {
   const toggleLike = async (articleId: string) => {
     try {
       const result = await api.toggleArticleLike(articleId)
-      const index = articles.value.findIndex(a => a.id === articleId)
+      const index = articles.value.findIndex((a) => a.id === articleId)
       if (index !== -1) {
         articles.value[index] = {
           ...articles.value[index],
@@ -206,7 +211,7 @@ export const useArticleStore = defineStore('articles', () => {
   const addComment = async (input: AddCommentInput) => {
     try {
       const newComment = await api.addComment(input.articleId, input.content, input.author)
-      const index = articles.value.findIndex(a => a.id === input.articleId)
+      const index = articles.value.findIndex((a) => a.id === input.articleId)
       if (index !== -1) {
         const existingComments = articles.value[index].comments || []
         articles.value[index] = {
@@ -225,12 +230,12 @@ export const useArticleStore = defineStore('articles', () => {
   const deleteComment = async (articleId: string, commentId: string) => {
     try {
       await api.deleteComment(articleId, commentId)
-      const index = articles.value.findIndex(a => a.id === articleId)
+      const index = articles.value.findIndex((a) => a.id === articleId)
       if (index !== -1) {
         const existingComments = articles.value[index].comments || []
         articles.value[index] = {
           ...articles.value[index],
-          comments: existingComments.filter(c => c.id !== commentId)
+          comments: existingComments.filter((c) => c.id !== commentId)
         }
       }
     } catch (e) {
@@ -242,10 +247,10 @@ export const useArticleStore = defineStore('articles', () => {
   const toggleCommentLike = async (articleId: string, commentId: string) => {
     try {
       const result = await api.toggleCommentLike(articleId, commentId)
-      const articleIndex = articles.value.findIndex(a => a.id === articleId)
+      const articleIndex = articles.value.findIndex((a) => a.id === articleId)
       if (articleIndex !== -1) {
         const existingComments = articles.value[articleIndex].comments || []
-        const commentIndex = existingComments.findIndex(c => c.id === commentId)
+        const commentIndex = existingComments.findIndex((c) => c.id === commentId)
         if (commentIndex !== -1) {
           const newComments = [...existingComments]
           newComments[commentIndex] = {
@@ -267,7 +272,7 @@ export const useArticleStore = defineStore('articles', () => {
   const refreshArticle = async (id: string) => {
     try {
       const article = await api.getArticle(id)
-      const index = articles.value.findIndex(a => a.id === id)
+      const index = articles.value.findIndex((a) => a.id === id)
       if (index !== -1) {
         articles.value[index] = article
       }

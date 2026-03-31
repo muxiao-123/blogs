@@ -54,7 +54,7 @@ describe('ArticleStore - Create Article', () => {
 
   it('adds new article at the beginning of list', () => {
     const store = useArticleStore()
-    const firstArticleId = store.articles[0]?.id
+    // const firstArticleId = store.articles[0]?.id
 
     const input: CreateArticleInput = {
       title: '最新文章',

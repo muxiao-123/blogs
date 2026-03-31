@@ -30,9 +30,12 @@ const toggleMobileMenu = () => {
 }
 
 // 监听路由变化，确保滚动到顶部
-watch(() => route.fullPath, () => {
-  window.scrollTo({ top: 0, behavior: 'auto' })
-})
+watch(
+  () => route.fullPath,
+  () => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
+)
 
 const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
@@ -71,7 +74,7 @@ const menuItems = [
   { icon: 'message', label: '消息', path: '/messages', hasBadge: true },
   { icon: 'heart', label: '收藏夹', path: '/favorites' },
   { icon: 'settings', label: '设置', path: '/settings' },
-  { icon: 'help', label: '帮助与反馈', path: '/help' },
+  { icon: 'help', label: '帮助与反馈', path: '/help' }
 ]
 
 // 加载未读消息数
@@ -88,11 +91,11 @@ const loadUnreadCount = async () => {
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
   await userStore.init()
-  
+
   if (userStore.isLoggedIn) {
     loadUnreadCount()
   }
-  
+
   // 点击其他区域关闭用户菜单
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement
@@ -103,20 +106,26 @@ onMounted(async () => {
 })
 
 // 监听登录状态变化
-watch(() => userStore.isLoggedIn, (loggedIn) => {
-  if (loggedIn) {
-    loadUnreadCount()
-  } else {
-    unreadCount.value = 0
+watch(
+  () => userStore.isLoggedIn,
+  (loggedIn) => {
+    if (loggedIn) {
+      loadUnreadCount()
+    } else {
+      unreadCount.value = 0
+    }
   }
-})
+)
 
 // 监听路由变化，关闭移动菜单
-watch(() => route.fullPath, () => {
-  if (isMobileMenuOpen.value) {
-    closeMobileMenu()
+watch(
+  () => route.fullPath,
+  () => {
+    if (isMobileMenuOpen.value) {
+      closeMobileMenu()
+    }
   }
-})
+)
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
@@ -142,26 +151,45 @@ onUnmounted(() => {
 
       <div class="nav-links" :class="{ open: isMobileMenuOpen }">
         <router-link to="/" class="nav-link" @click="closeMobileMenu">首页</router-link>
-        <router-link to="/category/frontend" class="nav-link" @click="closeMobileMenu">前端</router-link>
-        <router-link to="/category/backend" class="nav-link" @click="closeMobileMenu">后端</router-link>
-        <router-link to="/category/fullstack" class="nav-link" @click="closeMobileMenu">全栈</router-link>
-        
+        <router-link to="/category/frontend" class="nav-link" @click="closeMobileMenu"
+          >前端</router-link
+        >
+        <router-link to="/category/backend" class="nav-link" @click="closeMobileMenu"
+          >后端</router-link
+        >
+        <router-link to="/category/fullstack" class="nav-link" @click="closeMobileMenu"
+          >全栈</router-link
+        >
+
         <!-- 消息入口 -->
         <router-link to="/messages" class="message-link" @click="closeMobileMenu">
           消息
-          <span v-if="unreadCount > 0" class="message-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+          <span v-if="unreadCount > 0" class="message-badge">{{
+            unreadCount > 99 ? '99+' : unreadCount
+          }}</span>
         </router-link>
-        
+
         <ThemeToggle />
-        
+
         <!-- 登录/注册或用户信息 -->
         <template v-if="!userStore.isLoggedIn">
-          <router-link :to="`/auth?redirect=${loginRedirect}`" class="auth-btn" @click="handleLoginClick">
+          <router-link
+            :to="`/auth?redirect=${loginRedirect}`"
+            class="auth-btn"
+            @click="handleLoginClick"
+          >
             登录
           </router-link>
           <!-- 写文章按钮 -->
           <router-link to="/create" class="create-btn" @click="closeMobileMenu">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
             </svg>
@@ -173,11 +201,20 @@ onUnmounted(() => {
             <button class="user-trigger" @click="toggleUserMenu">
               <img :src="userStore.user?.avatar" alt="avatar" class="user-avatar" />
               <span class="user-name">{{ userStore.user?.username }}</span>
-              <svg class="arrow-icon" :class="{ open: isUserMenuOpen }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                class="arrow-icon"
+                :class="{ open: isUserMenuOpen }"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
-            
+
             <div class="user-dropdown" v-show="isUserMenuOpen">
               <div class="dropdown-user-info">
                 <img :src="userStore.user?.avatar" alt="avatar" class="dropdown-avatar" />
@@ -186,46 +223,109 @@ onUnmounted(() => {
                   <span class="dropdown-email">{{ userStore.user?.email }}</span>
                 </div>
               </div>
-              
+
               <div class="dropdown-divider"></div>
-              
-              <router-link 
-                v-for="item in menuItems" 
+
+              <router-link
+                v-for="item in menuItems"
                 :key="item.path"
-                :to="item.path" 
+                :to="item.path"
                 class="dropdown-item"
                 @click="closeUserMenu"
               >
-                <svg v-if="item.icon === 'user'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  v-if="item.icon === 'user'"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <svg v-if="item.icon === 'message'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  v-if="item.icon === 'message'"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
-                <span v-if="item.hasBadge && unreadCount > 0" class="dropdown-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
-                <svg v-if="item.icon === 'heart'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                <span v-if="item.hasBadge && unreadCount > 0" class="dropdown-badge">{{
+                  unreadCount > 99 ? '99+' : unreadCount
+                }}</span>
+                <svg
+                  v-if="item.icon === 'heart'"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                  ></path>
                 </svg>
-                <svg v-if="item.icon === 'star'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                <svg
+                  v-if="item.icon === 'star'"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polygon
+                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                  ></polygon>
                 </svg>
-                <svg v-if="item.icon === 'settings'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  v-if="item.icon === 'settings'"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <circle cx="12" cy="12" r="3"></circle>
-                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                  ></path>
                 </svg>
-                <svg v-if="item.icon === 'help'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  v-if="item.icon === 'help'"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <circle cx="12" cy="12" r="10"></circle>
                   <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                   <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
                 {{ item.label }}
               </router-link>
-              
+
               <div class="dropdown-divider"></div>
-              
+
               <button class="dropdown-item logout" @click="handleLogout">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                   <polyline points="16 17 21 12 16 7"></polyline>
                   <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -237,8 +337,20 @@ onUnmounted(() => {
         </template>
 
         <!-- 写文章按钮 - 仅登录用户显示 -->
-        <router-link v-if="userStore.isLoggedIn" to="/create" class="create-btn" @click="closeMobileMenu">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <router-link
+          v-if="userStore.isLoggedIn"
+          to="/create"
+          class="create-btn"
+          @click="closeMobileMenu"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
           </svg>

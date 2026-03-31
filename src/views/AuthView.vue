@@ -3,53 +3,33 @@
     <div class="auth-container">
       <div class="auth-card">
         <h1 class="auth-title">{{ isLogin ? '登录' : '注册' }}</h1>
-        
+
         <form @submit.prevent="handleSubmit" class="auth-form">
           <div class="form-group" v-if="!isLogin">
             <label>用户名</label>
-            <input 
-              type="text" 
-              v-model="formData.username" 
-              placeholder="请输入用户名"
-              required
-            />
+            <input type="text" v-model="formData.username" placeholder="请输入用户名" required />
           </div>
 
           <div class="form-group" v-if="!isLogin">
             <label>邮箱</label>
-            <input 
-              type="email" 
-              v-model="formData.email" 
-              placeholder="请输入邮箱"
-              required
-            />
+            <input type="email" v-model="formData.email" placeholder="请输入邮箱" required />
           </div>
 
           <div class="form-group">
             <label>账号</label>
-            <input 
-              type="text" 
-              v-model="formData.username" 
-              placeholder="请输入账号"
-              required
-            />
+            <input type="text" v-model="formData.username" placeholder="请输入账号" required />
           </div>
 
           <div class="form-group">
             <label>密码</label>
-            <input 
-              type="password" 
-              v-model="formData.password" 
-              placeholder="请输入密码"
-              required
-            />
+            <input type="password" v-model="formData.password" placeholder="请输入密码" required />
           </div>
 
           <div class="form-group" v-if="!isLogin">
             <label>确认密码</label>
-            <input 
-              type="password" 
-              v-model="formData.confirmPassword" 
+            <input
+              type="password"
+              v-model="formData.confirmPassword"
               placeholder="请再次输入密码"
               required
             />
@@ -58,7 +38,7 @@
           <div class="error-message" v-if="error">{{ error }}</div>
 
           <button type="submit" class="submit-btn" :disabled="loading">
-            {{ loading ? '处理中...' : (isLogin ? '登录' : '注册') }}
+            {{ loading ? '处理中...' : isLogin ? '登录' : '注册' }}
           </button>
         </form>
 
@@ -126,13 +106,13 @@ const handleSubmit = async () => {
     }
 
     // 登录成功后跳转到redirect参数指定的页面，或默认跳转首页
-    const redirectUrl = route.query.redirect as string || localStorage.getItem('targetPath')
+    const redirectUrl = (route.query.redirect as string) || localStorage.getItem('targetPath')
     const targetPath = redirectUrl || '/'
 
     // 清除保存的数据
     localStorage.removeItem('targetScrollY')
     localStorage.removeItem('targetPath')
-    
+
     // 使用 Vue Router 跳转，不刷新页面
     router.push(targetPath)
   } catch (e: any) {

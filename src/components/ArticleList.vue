@@ -20,13 +20,16 @@ const totalCount = computed(() => {
 // 记录首次加载状态
 const isInitialLoad = ref(true)
 
-watch(() => articleStore.currentPage, (newPage) => {
-  if (newPage === 1) {
-    isInitialLoad.value = true
-  } else {
-    isInitialLoad.value = false
+watch(
+  () => articleStore.currentPage,
+  (newPage) => {
+    if (newPage === 1) {
+      isInitialLoad.value = true
+    } else {
+      isInitialLoad.value = false
+    }
   }
-})
+)
 
 const getAnimationDelay = (index: number) => {
   // 只有首次加载时才有动画延迟，加载更多时立即显示
@@ -54,18 +57,14 @@ const getAnimationDelay = (index: number) => {
     </div>
 
     <div class="load-more-wrapper" v-if="articleStore.hasMore">
-      <button class="load-more-btn" @click="articleStore.loadMore">
-        加载更多
-      </button>
+      <button class="load-more-btn" @click="articleStore.loadMore">加载更多</button>
     </div>
 
     <div class="empty-state" v-if="articleStore.filteredArticles.length === 0">
       <div class="empty-icon">🔍</div>
       <h3>没有找到相关文章</h3>
       <p>试试调整筛选条件或搜索关键词</p>
-      <button class="reset-btn" @click="articleStore.clearFilters">
-        清除筛选
-      </button>
+      <button class="reset-btn" @click="articleStore.clearFilters">清除筛选</button>
     </div>
   </section>
 </template>

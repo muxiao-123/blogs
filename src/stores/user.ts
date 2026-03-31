@@ -9,7 +9,7 @@ interface User {
   bio: string
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE ||'http://localhost:3001/api'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api'
 
 export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null)
@@ -25,7 +25,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       const response = await fetch(`${API_BASE}/auth/me`, {
         headers: {
-          'Authorization': `Bearer ${token.value}`
+          Authorization: `Bearer ${token.value}`
         }
       })
 
@@ -105,7 +105,12 @@ export const useUserStore = defineStore('user', () => {
   }
 
   // 更新用户信息
-  async function updateProfile(data: { username?: string; email?: string; bio?: string; avatar?: string }) {
+  async function updateProfile(data: {
+    username?: string
+    email?: string
+    bio?: string
+    avatar?: string
+  }) {
     if (!token.value) {
       throw new Error('未登录')
     }
@@ -116,7 +121,7 @@ export const useUserStore = defineStore('user', () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token.value}`
+          Authorization: `Bearer ${token.value}`
         },
         body: JSON.stringify(data)
       })

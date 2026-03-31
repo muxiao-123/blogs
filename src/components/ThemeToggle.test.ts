@@ -16,9 +16,9 @@ describe('ThemeToggle', () => {
   it('toggles theme when clicked', async () => {
     const wrapper = mount(ThemeToggle)
     const button = wrapper.find('button')
-    
+
     await button.trigger('click')
-    
+
     // Theme should toggle
     expect(button.exists()).toBe(true)
   })

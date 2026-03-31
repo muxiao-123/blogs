@@ -26,13 +26,16 @@ onMounted(async () => {
   }
 })
 
-watch(() => route.params.category, (newCategory) => {
-  if (newCategory) {
-    articleStore.setCategory(newCategory as Category)
-  } else {
-    articleStore.setCategory(null)
+watch(
+  () => route.params.category,
+  (newCategory) => {
+    if (newCategory) {
+      articleStore.setCategory(newCategory as Category)
+    } else {
+      articleStore.setCategory(null)
+    }
   }
-})
+)
 </script>
 
 <template>
@@ -52,7 +55,14 @@ watch(() => route.params.category, (newCategory) => {
               :class="{ active: articleStore.sortBy === 'publishDate' }"
               @click="handleSortChange('publishDate')"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
@@ -63,7 +73,14 @@ watch(() => route.params.category, (newCategory) => {
               :class="{ active: articleStore.sortBy === 'views' }"
               @click="handleSortChange('views')"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>

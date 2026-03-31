@@ -85,7 +85,9 @@ const handleFavorite = async () => {
       stroke="currentColor"
       stroke-width="2"
     >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      <polygon
+        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+      />
     </svg>
     <span class="favorite-text">{{ isFavorited ? '已收藏' : '收藏' }}</span>
     <span v-if="favoritesCount > 0" class="favorite-count">({{ favoritesCount }})</span>
@@ -142,8 +144,14 @@ const handleFavorite = async () => {
 }
 
 @keyframes star-pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.3); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 </style>
