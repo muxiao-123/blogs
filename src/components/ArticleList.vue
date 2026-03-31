@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useArticleStore } from '@/stores/articles'
 import ArticleCard from './ArticleCard.vue'
 
@@ -16,6 +16,23 @@ const displayedCount = computed(() => {
 const totalCount = computed(() => {
   return articleStore.filteredArticles.length
 })
+
+// 记录首次加载状态
+const isInitialLoad = ref(true)
+
+watch(() => articleStore.currentPage, (newPage) => {
+  if (newPage === 1) {
+    isInitialLoad.value = true
+  } else {
+    isInitialLoad.value = false
+  }
+})
+
+const getAnimationDelay = (index: number) => {
+  // 只有首次加载时才有动画延迟，加载更多时立即显示
+  if (!isInitialLoad.value) return '0s'
+  return `${index * 0.05}s`
+}
 </script>
 
 <template>
@@ -32,7 +49,7 @@ const totalCount = computed(() => {
         v-for="(article, index) in articleStore.paginatedArticles"
         :key="article.id"
         :article="article"
-        :style="{ animationDelay: `${index * 0.1}s` }"
+        :style="{ animationDelay: getAnimationDelay(index) }"
       />
     </div>
 
