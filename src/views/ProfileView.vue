@@ -239,12 +239,12 @@
             <div class="article-list">
               <article v-for="article in currentArticles" :key="article.id" class="article-item">
                 <div class="article-cover-wrapper">
-                  <router-link
-                    :to="activeTab === 'articles' ? `/article/${article.id}` : '#'"
+                  <a
                     class="article-cover-link"
+                    @click="openArticle(activeTab === 'articles' ? article.id : '#')"
                   >
                     <img :src="article.cover" :alt="article.title" class="article-cover" />
-                  </router-link>
+                  </a>
                   <!-- 编辑和删除按钮，仅在文章列表显示 -->
                   <div v-if="activeTab === 'articles'" class="article-actions">
                     <button
@@ -290,9 +290,9 @@
                     <span class="article-category">{{ article.category }}</span>
                     <span class="article-date">{{ formatDate(article.publishDate) }}</span>
                   </div>
-                  <router-link :to="`/article/${article.id}`" class="article-title">
+                  <a class="article-title" @click="openArticle(article.id)">
                     {{ article.title }}
-                  </router-link>
+                  </a>
                   <p class="article-excerpt">{{ article.excerpt }}</p>
                   <div class="article-stats">
                     <span class="stat">
@@ -691,6 +691,17 @@ const handleSubmit = async () => {
     loading.value = false
   }
 }
+const openArticle = (id: string | number) => {
+  if (id === '#') {
+    router.push(id)
+    return
+  }
+  const routeUrl = router.resolve({
+    name: 'Article',
+    params: { id }
+  }).href
+  window.open(routeUrl, '_blank')
+}
 </script>
 
 <style scoped>
@@ -1005,6 +1016,7 @@ const handleSubmit = async () => {
 
 .article-cover-link {
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .article-cover-wrapper {
@@ -1060,6 +1072,7 @@ const handleSubmit = async () => {
   text-decoration: none;
   margin-bottom: 8px;
   transition: color 0.2s;
+  cursor: pointer;
 }
 
 .article-title:hover {

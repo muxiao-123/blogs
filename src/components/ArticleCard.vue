@@ -2,11 +2,12 @@
 import { ref, computed } from 'vue'
 import type { Article } from '@/types'
 import { categories } from '@/data/articles'
-
+import { useRouter } from 'vue-router'
 const props = defineProps<{
   article: Article
 }>()
 
+const router = useRouter()
 // 默认图片
 const defaultCover = '/default-cover.svg'
 const defaultAvatar =
@@ -48,10 +49,16 @@ const formatDate = (dateStr: string | undefined) => {
     day: 'numeric'
   })
 }
+const openArticle = () => {
+  const routeUrl = router.resolve({
+    name: 'Article',
+    params: { id: props.article.id }
+  }).href
+  window.open(routeUrl, '_blank')
+}
 </script>
-
 <template>
-  <article class="article-card" @click="$router.push(`/article/${article.id}`)">
+  <article class="article-card" @click="openArticle">
     <div class="card-image">
       <div v-if="!coverLoaded" class="image-placeholder"></div>
       <img
