@@ -29,6 +29,11 @@ const toggleMobileMenu = () => {
   }
 }
 
+// 监听路由变化，确保滚动到顶部
+watch(() => route.fullPath, () => {
+  window.scrollTo({ top: 0, behavior: 'auto' })
+})
+
 const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
   document.body.style.overflow = ''
