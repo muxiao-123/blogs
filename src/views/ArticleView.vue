@@ -183,7 +183,7 @@ const hasToc = computed(() => tocItems.value.length > 0)
 const parseToc = (content: string) => {
   const items: Array<{ id: string; text: string; level: number }> = []
 
-  // 优先尝试解析 HTML 格式标题 (Tiptap)
+  // 1. 优先尝试解析 HTML 格式标题 (Tiptap)
   const htmlRegex = /<h([1-3])[^>]*>([^<]+)<\/h[1-3]>/gi
   let match
 
@@ -194,7 +194,18 @@ const parseToc = (content: string) => {
     items.push({ id, text, level })
   }
 
-  // 如果没有 HTML 标题，再尝试 Markdown 格式
+  // 2. 尝试解析 p 标签内的 Markdown 标题格式
+  if (items.length === 0) {
+    const pMdRegex = /<p>(#{1,3})\s(.+?)<\/p>/gi
+    while ((match = pMdRegex.exec(content)) !== null) {
+      const level = match[1].length
+      const text = match[2].trim()
+      const id = text.toLowerCase().replace(/[^\u4e00-\u9fa5a-z0-9]+/g, '-')
+      items.push({ id, text, level })
+    }
+  }
+
+  // 3. 如果没有 HTML 标题，再尝试纯 Markdown 格式
   if (items.length === 0) {
     const mdRegex = /^(#{1,3})\s+(.+)$/gm
     while ((match = mdRegex.exec(content)) !== null) {
@@ -267,41 +278,277 @@ const toSafeId = (text: string): string => {
   return text.toLowerCase().replace(/[^\u4e00-\u9fa5a-z0-9]+/g, '-')
 }
 
+// HTML 反转义
+const unescapeHtml = (text: string): string => {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+}
+
 // Content rendering function
 const renderContent = (content: string): string => {
   if (!content) return ''
 
-  let html = content
+  // 检测是否有 p 标签内的 Markdown 语法（如 <p>## 标题</p> 或 <p>**粗体**</p>）
+  const hasMarkdownInP = /<p>[#*`>\\-]/.test(content)
 
-  // HTML Headers - 给已存在的 HTML 标题添加 id (Tiptap 生成的)
-  html = html.replace(/<h([1-3])[^>]*>([^<]+)<\/h[1-3]>/gi, (_match, level, text) => {
-    const id = toSafeId(text.trim())
-    return `<h${level} id="${id}">${text}</h${level}>`
+  // 检测是否包含任何 HTML 标签（是 HTML 内容）
+  const hasAnyHtml =
+    /<\/?(p|h[1-6]|div|span|strong|em|code|pre|blockquote|ul|ol|li|a|img)[^>]*>/i.test(content)
+
+  // 如果包含 HTML 标签，直接返回（已经是有效 HTML）
+  if (hasAnyHtml && !hasMarkdownInP) {
+    // 给标题添加 id
+    return content.replace(/<h([1-3])([^>]*)>([^<]+)<\/h[1-3]>/gi, (_m, level, attrs, text) => {
+      const id = toSafeId(text.trim())
+      return `<h${level}${attrs} id="${id}">${text}</h${level}>`
+    })
+  }
+
+  if (hasMarkdownInP) {
+    // 内容混合了 HTML 和 Markdown（Markdown 在 p 标签内）
+    // 需要把 p 标签内的 Markdown 语法转换为 HTML
+    let result = content
+
+    // 第一步：处理代码块（需要特殊处理，因为它可能跨多个 p 标签）
+    result = processCodeBlocksInP(result)
+
+    // 第二步：处理其他 p 标签内的 Markdown
+    result = result
+      // 处理 h1, h2, h3（支持带 emoji 或其他前缀的情况）
+      .replace(/<p>(#{1,3})\s(.+?)<\/p>/g, (_m, hashes, text) => {
+        const level = hashes.length
+        const id = toSafeId(text.trim())
+        return `<h${level} id="${id}">${text}</h${level}>`
+      })
+      // 处理引用块
+      .replace(/<p>(&gt;)\s(.+?)<\/p>/g, '<blockquote><p>$2</p></blockquote>')
+      // 处理无序列表（列表标记后必须有空格，且不是连续的两个标记）
+      .replace(/<p>([-*+])\s{1,}(?![*+-])(.+?)<\/p>/g, '<li>$2</li>')
+      // 处理有序列表
+      .replace(/<p>(\d+)\.\s(.+?)<\/p>/g, '<li>$2</li>')
+      // 处理水平线
+      .replace(/<p>[-*_]{3,}<\/p>/g, '<hr>')
+      // 给已有的 HTML 标题添加 id
+      .replace(/<h([1-3])([^>]*)>([^<]+)<\/h[1-3]>/gi, (_m, level, attrs, text) => {
+        const id = toSafeId(text.trim())
+        return `<h${level}${attrs} id="${id}">${text}</h${level}>`
+      })
+
+    // 第三步：合并连续的列表项
+    result = result.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, (match) => {
+      return '<ul>' + match + '</ul>'
+    })
+
+    // 第四步：处理行内 Markdown（粗体、斜体、行内代码、链接）
+    result = processInlineMarkdownInHtml(result)
+
+    return result
+  }
+
+  // 纯 Markdown 格式
+  return parseMarkdown(content)
+}
+
+// 处理 p 标签内的代码块
+const processCodeBlocksInP = (content: string): string => {
+  // 匹配代码块开始和结束之间的所有 <p>...</p>
+  // 使用占位符保护已处理的代码块，防止后续处理干扰
+  const codeBlocks: string[] = []
+  let blockIndex = 0
+
+  const processed = content.replace(
+    /<p>```(\w*)<\/p>([\s\S]*?)<p>```<\/p>/g,
+    (_m, lang, innerContent) => {
+      // 提取所有 <p> 标签内的内容并合并
+      const lines = innerContent.match(/<p>([\s\S]*?)<\/p>/g) || []
+      let code = lines
+        .map((line) => {
+          // 移除 <p> 和 </p> 标签
+          return line.replace(/^<p>/, '').replace(/<\/p>$/, '')
+        })
+        .join('\n')
+
+      // 转义 HTML 特殊字符
+      code = escapeHtml(code.trim())
+
+      // 保存代码块并用占位符替换
+      const placeholder = `___CODE_BLOCK_${blockIndex}___`
+      codeBlocks.push(`<pre><code class="language-${lang}">${code}</code></pre>`)
+      blockIndex++
+
+      return placeholder
+    }
+  )
+
+  // 将占位符替换回代码块
+  let result = processed
+  codeBlocks.forEach((block, i) => {
+    result = result.replace(`___CODE_BLOCK_${i}___`, block)
   })
 
-  // Markdown Headers - 使用安全的 id
-  html = html
-    .replace(/^### (.+)$/gm, (_match, p1) => `<h3 id="${toSafeId(p1)}">${p1}</h3>`)
-    .replace(/^## (.+)$/gm, (_match, p1) => `<h2 id="${toSafeId(p1)}">${p1}</h2>`)
-    .replace(/^# (.+)$/gm, (_match, p1) => `<h1 id="${toSafeId(p1)}">${p1}</h1>`)
-    // Code blocks
-    .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
-    // Inline code
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    // Bold
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    // Italic
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    // Lists
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    // Paragraphs
-    .replace(/\n\n/g, '</p><p>')
-    // Wrap in paragraphs
-    .replace(/^(?!<[hl]|<pre|<li|<p)(.+)$/gm, '<p>$1</p>')
-    // Fix list items
-    .replace(/(<li>.*<\/li>)+/g, '<ul>$&</ul>')
+  return result
+}
 
-  return html
+// 在已转换的 HTML 中处理行内 Markdown（不再处理代码块内的内容）
+const processInlineMarkdownInHtml = (content: string): string => {
+  // 先转义 HTML 特殊字符，但保留已转换的标签
+  let result = content
+
+  // 处理行内代码
+  result = result.replace(/<p>`([^`]+)`<\/p>/g, '<p><code>$1</code></p>')
+  result = result.replace(/`([^`]+)`/g, '<code>$1</code>')
+
+  // 处理粗体
+  result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+
+  // 处理斜体
+  result = result.replace(/\*(.+?)\*/g, '<em>$1</em>')
+
+  // 处理链接
+  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+
+  return result
+}
+
+// 解析纯 Markdown 格式
+const parseMarkdown = (content: string): string => {
+  const lines = content.split('\n')
+  const result: string[] = []
+  let inCodeBlock = false
+  let codeBlockContent = ''
+  let codeBlockLang = ''
+  let i = 0
+
+  while (i < lines.length) {
+    const line = lines[i]
+
+    // 代码块处理
+    if (line.trim().startsWith('```')) {
+      if (!inCodeBlock) {
+        inCodeBlock = true
+        codeBlockLang = line.trim().slice(3)
+        codeBlockContent = ''
+      } else {
+        inCodeBlock = false
+        const lang = escapeHtml(codeBlockLang)
+        const displayLang = codeBlockLang || 'code'
+        result.push(
+          `<pre class="code-block" data-lang="${lang}"><div class="code-header"><span class="code-lang">${displayLang}</span><button class="copy-btn" onclick="copyCode(this)">复制</button></div><div class="code-content"><code class="language-${lang}">${escapeHtml(codeBlockContent.trim())}</code></div></pre>`
+        )
+      }
+      i++
+      continue
+    }
+
+    if (inCodeBlock) {
+      codeBlockContent += line + '\n'
+      i++
+      continue
+    }
+
+    // 标题处理
+    if (line.startsWith('### ')) {
+      const text = line.slice(4)
+      result.push(`<h3 id="${toSafeId(text)}">${escapeHtml(text)}</h3>`)
+      i++
+      continue
+    }
+    if (line.startsWith('## ')) {
+      const text = line.slice(3)
+      result.push(`<h2 id="${toSafeId(text)}">${escapeHtml(text)}</h2>`)
+      i++
+      continue
+    }
+    if (line.startsWith('# ')) {
+      const text = line.slice(2)
+      result.push(`<h1 id="${toSafeId(text)}">${escapeHtml(text)}</h1>`)
+      i++
+      continue
+    }
+
+    // 列表处理
+    if (line.match(/^[-*+]\s/)) {
+      result.push(`<li>${processInlineMarkdown(line.slice(2))}</li>`)
+      i++
+      continue
+    }
+    if (/^\d+\.\s/.test(line)) {
+      result.push(`<li>${processInlineMarkdown(line.replace(/^\d+\.\s/, ''))}</li>`)
+      i++
+      continue
+    }
+
+    // 水平线
+    if (line.trim().match(/^[-*_]{3,}$/)) {
+      result.push('<hr>')
+      i++
+      continue
+    }
+
+    // 空行
+    if (line.trim() === '') {
+      i++
+      continue
+    }
+
+    // 普通段落
+    result.push(`<p>${processInlineMarkdown(line)}</p>`)
+    i++
+  }
+
+  // 合并连续的无序列表项
+  let merged = result.join('\n')
+  merged = merged.replace(/(<li>[\s\S]*?<\/li>\n?)+/g, (match) => {
+    return '<ul>' + match + '</ul>'
+  })
+
+  return merged
+}
+
+// 处理行内 markdown 格式
+const processInlineMarkdown = (text: string): string => {
+  // 先转义 HTML 特殊字符
+  let result = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+  // 处理 Markdown 语法
+  // Inline code
+  result = result.replace(/`([^`]+)`/g, '<code>$1</code>')
+  // Bold
+  result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  // Italic
+  result = result.replace(/\*(.+?)\*/g, '<em>$1</em>')
+  // Link
+  result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+
+  return result
+}
+
+// HTML 转义
+const escapeHtml = (text: string): string => {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+// 复制代码功能
+;(window as any).copyCode = function (btn: HTMLButtonElement) {
+  const pre = btn.closest('pre')
+  const code = pre?.querySelector('code')
+  if (code) {
+    navigator.clipboard.writeText(code.textContent || '').then(() => {
+      btn.textContent = '已复制!'
+      setTimeout(() => {
+        btn.textContent = '复制'
+      }, 2000)
+    })
+  }
 }
 </script>
 
@@ -1150,10 +1397,57 @@ const renderContent = (content: string): string => {
   background: var(--color-bg-light);
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  padding: 16px;
-  overflow-x: auto;
   margin-bottom: 20px;
   font-size: 0.875rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.content-body :deep(pre .code-header) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 8px 8px 0 0;
+  flex-shrink: 0;
+}
+
+.content-body :deep(pre .code-lang) {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.content-body :deep(pre .copy-btn) {
+  padding: 4px 12px;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.content-body :deep(pre .copy-btn:hover) {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.content-body :deep(pre .code-content) {
+  overflow-x: auto;
+}
+
+.content-body :deep(pre .code-content code) {
+  display: block !important;
+  padding: 16px !important;
+  padding-left: 24px !important;
+  background: none !important;
+  white-space: pre;
 }
 
 .content-body :deep(code) {

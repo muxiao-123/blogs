@@ -4,6 +4,11 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
+import TextAlign from '@tiptap/extension-text-align'
+import { TextStyle } from '@tiptap/extension-text-style'
+import Color from '@tiptap/extension-color'
+import Highlight from '@tiptap/extension-highlight'
+import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import { watch, onBeforeUnmount } from 'vue'
 
 const props = defineProps<{
@@ -32,14 +37,25 @@ const editor = useEditor({
         class: 'editor-link'
       }
     }),
-    Underline
+    Underline,
+    TextStyle,
+    Color.configure({
+      types: ['textStyle']
+    }),
+    Highlight.configure({
+      multicolor: true
+    }),
+    TextAlign.configure({
+      types: ['heading', 'paragraph'],
+      alignments: ['left', 'center', 'right', 'justify']
+    }),
+    HorizontalRule
   ],
   onUpdate: ({ editor }) => {
     emit('update:modelValue', editor.getHTML())
   }
 })
 
-// 监听外部值变化
 watch(
   () => props.modelValue,
   (newValue) => {
@@ -50,19 +66,54 @@ watch(
   }
 )
 
-// 工具栏按钮点击处理
+const isActive = (type: string, attrs?: Record<string, unknown>) => {
+  return editor.value?.isActive(type, attrs) ?? false
+}
+
+const isTextAlignActive = (align: 'left' | 'center' | 'right' | 'justify') => {
+  return editor.value?.isActive({ textAlign: align }) ?? false
+}
+
+// 文本格式
 const toggleBold = () => editor.value?.chain().focus().toggleBold().run()
 const toggleItalic = () => editor.value?.chain().focus().toggleItalic().run()
 const toggleUnderline = () => editor.value?.chain().focus().toggleUnderline().run()
 const toggleStrike = () => editor.value?.chain().focus().toggleStrike().run()
 const toggleCode = () => editor.value?.chain().focus().toggleCode().run()
 const toggleCodeBlock = () => editor.value?.chain().focus().toggleCodeBlock().run()
+const clearFormat = () => editor.value?.chain().focus().clearNodes().unsetAllMarks().run()
+
+// 标题
 const toggleHeading = (level: 1 | 2 | 3) =>
   editor.value?.chain().focus().toggleHeading({ level }).run()
+
+// 列表
 const toggleBulletList = () => editor.value?.chain().focus().toggleBulletList().run()
 const toggleOrderedList = () => editor.value?.chain().focus().toggleOrderedList().run()
 const toggleBlockquote = () => editor.value?.chain().focus().toggleBlockquote().run()
+const setHorizontalRule = () => editor.value?.chain().focus().setHorizontalRule().run()
 
+// 对齐
+const setTextAlign = (align: 'left' | 'center' | 'right' | 'justify') => {
+  editor.value?.chain().focus().setTextAlign(align).run()
+}
+
+// 颜色
+const setTextColor = () => {
+  const color = window.prompt('请输入字体颜色 (如 #ff0000):')
+  if (color) {
+    editor.value?.chain().focus().setColor(color).run()
+  }
+}
+
+const setHighlight = () => {
+  const color = window.prompt('请输入高亮颜色 (如 #ffff00):')
+  if (color) {
+    editor.value?.chain().focus().setHighlight({ color }).run()
+  }
+}
+
+// 链接
 const setLink = () => {
   const url = window.prompt('请输入链接地址:')
   if (url) {
@@ -74,9 +125,9 @@ const unsetLink = () => {
   editor.value?.chain().focus().unsetLink().run()
 }
 
-const isActive = (type: string, attrs?: Record<string, unknown>) => {
-  return editor.value?.isActive(type, attrs) ?? false
-}
+// 撤销/重做
+const undo = () => editor.value?.chain().focus().undo().run()
+const redo = () => editor.value?.chain().focus().redo().run()
 
 onBeforeUnmount(() => {
   editor.value?.destroy()
@@ -87,6 +138,24 @@ onBeforeUnmount(() => {
   <div class="tiptap-editor">
     <!-- 工具栏 -->
     <div class="editor-toolbar">
+      <!-- 撤销/重做 -->
+      <div class="toolbar-group">
+        <button type="button" @click="undo" title="撤销 (Ctrl+Z)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"
+            />
+          </svg>
+        </button>
+        <button type="button" @click="redo" title="重做 (Ctrl+Y)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"
+            />
+          </svg>
+        </button>
+      </div>
+
       <!-- 标题 -->
       <div class="toolbar-group">
         <button
@@ -121,7 +190,7 @@ onBeforeUnmount(() => {
           type="button"
           :class="{ active: isActive('bold') }"
           @click="toggleBold"
-          title="粗体"
+          title="粗体 (Ctrl+B)"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path
@@ -133,7 +202,7 @@ onBeforeUnmount(() => {
           type="button"
           :class="{ active: isActive('italic') }"
           @click="toggleItalic"
-          title="斜体"
+          title="斜体 (Ctrl+I)"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z" />
@@ -143,7 +212,7 @@ onBeforeUnmount(() => {
           type="button"
           :class="{ active: isActive('underline') }"
           @click="toggleUnderline"
-          title="下划线"
+          title="下划线 (Ctrl+U)"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path
@@ -161,6 +230,17 @@ onBeforeUnmount(() => {
             <path d="M10 19h4v-3h-4v3zM5 4v3h5v3h4V7h5V4H5zM3 14h18v-2H3v2z" />
           </svg>
         </button>
+        <button type="button" @click="clearFormat" title="清除格式">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- 代码 -->
+      <div class="toolbar-group">
         <button
           type="button"
           :class="{ active: isActive('code') }"
@@ -181,24 +261,70 @@ onBeforeUnmount(() => {
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path
-              d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H4V5h16v14zM6 17h2v-2H6v2zm4-4h8v-2h-8v2zm0 4h4v-2h-4v2zm-4-8h2V7H6v2z"
+              d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L20 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4zM5 18h14v2H5z"
             />
           </svg>
         </button>
       </div>
 
-      <!-- 链接 -->
+      <!-- 颜色 -->
+      <div class="toolbar-group">
+        <button type="button" @click="setTextColor" title="字体颜色">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M11 3L5.5 17h2.25l1.12-3h6.25l1.12 3h2.25L13 3h-2zm-1.38 9L12 5.67 14.38 12H9.62z"
+            />
+          </svg>
+        </button>
+        <button type="button" @click="setHighlight" title="文字高亮">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.5 4l-5-1-5 1v6l5-1 5 1V4zm0 8l-5 1-5-1v-2l5 1 5-1v2z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- 对齐 -->
       <div class="toolbar-group">
         <button
           type="button"
-          :class="{ active: isActive('link') }"
-          @click="isActive('link') ? unsetLink() : setLink()"
-          title="链接"
+          :class="{ active: isTextAlignActive('left') }"
+          @click="setTextAlign('left')"
+          title="左对齐"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path
-              d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"
+              d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"
             />
+          </svg>
+        </button>
+        <button
+          type="button"
+          :class="{ active: isTextAlignActive('center') }"
+          @click="setTextAlign('center')"
+          title="居中"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 15v2h10v-2H7zm-4 6h18v-2H3v2zm0-8h18v-2H3v2zm4-6v2h10V7H7zM3 3v2h18V3H3z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          :class="{ active: isTextAlignActive('right') }"
+          @click="setTextAlign('right')"
+          title="右对齐"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 21h18v-2H3v2zm6-4h12v-2H9v2zm-6-4h18v-2H3v2zm6-4h12V7H9v2zM3 3v2h18V3H3z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          :class="{ active: isTextAlignActive('justify') }"
+          @click="setTextAlign('justify')"
+          title="两端对齐"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V7H3v2zm0-6v2h18V3H3z" />
           </svg>
         </button>
       </div>
@@ -239,11 +365,34 @@ onBeforeUnmount(() => {
             <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z" />
           </svg>
         </button>
+        <button type="button" @click="setHorizontalRule" title="水平分割线">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 11h16v2H4z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- 链接 -->
+      <div class="toolbar-group">
+        <button
+          type="button"
+          :class="{ active: isActive('link') }"
+          @click="isActive('link') ? unsetLink() : setLink()"
+          title="链接"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"
+            />
+          </svg>
+        </button>
       </div>
     </div>
 
     <!-- 编辑器内容 -->
-    <editor-content :editor="editor" class="editor-content" />
+    <div class="editor-content-wrapper">
+      <editor-content :editor="editor" class="editor-content" />
+    </div>
   </div>
 </template>
 
@@ -253,6 +402,10 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   overflow: hidden;
   background: var(--color-bg-deep);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
 }
 
 .editor-toolbar {
@@ -262,6 +415,9 @@ onBeforeUnmount(() => {
   padding: 8px;
   background: var(--color-card-bg);
   border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  height: auto;
+  min-height: 50px;
 }
 
 .toolbar-group {
@@ -302,14 +458,22 @@ onBeforeUnmount(() => {
   color: white;
 }
 
+.editor-content-wrapper {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
 .editor-content {
-  min-height: 300px;
+  min-height: 100%;
   padding: 16px;
+  height: 100%;
 }
 
 .editor-content :deep(.ProseMirror) {
   outline: none;
-  min-height: 280px;
+  min-height: 200px;
+  height: auto;
 }
 
 .editor-content :deep(.ProseMirror p.is-editor-empty:first-child::before) {
@@ -405,5 +569,17 @@ onBeforeUnmount(() => {
 
 .editor-content :deep(.ProseMirror s) {
   text-decoration: line-through;
+}
+
+.editor-content :deep(.ProseMirror hr) {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 1.5rem 0;
+}
+
+.editor-content :deep(.ProseMirror mark) {
+  background-color: #fef08a;
+  padding: 0.1rem 0.2rem;
+  border-radius: 2px;
 }
 </style>

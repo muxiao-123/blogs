@@ -7,7 +7,6 @@ import { categories } from '@/data/articles'
 import { api } from '@/api/index'
 import type { Category } from '@/types'
 import NavBar from '@/components/NavBar.vue'
-import SiteFooter from '@/components/SiteFooter.vue'
 import TiptapEditor from '@/components/TiptapEditor.vue'
 
 const router = useRouter()
@@ -294,212 +293,202 @@ const goBack = () => {
 
     <main class="create-main">
       <div class="create-container">
-        <header class="create-header">
-          <button class="back-link" @click="goBack">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            返回首页
-          </button>
-          <h1 class="page-title">{{ isEditMode ? '编辑文章' : '创建新文章' }}</h1>
-          <p class="page-desc">{{ isEditMode ? '修改你的文章内容' : '分享你的技术见解和经验' }}</p>
-        </header>
-
-        <form class="article-form" @submit.prevent="submitForm">
-          <!-- 标题 -->
-          <div class="form-group">
-            <label for="title">文章标题 <span class="required">*</span></label>
-            <input
-              id="title"
-              v-model="formData.title"
-              type="text"
-              placeholder="输入一个有吸引力的标题..."
-              :class="{ error: errors.title }"
-            />
-            <span v-if="errors.title" class="error-message">{{ errors.title }}</span>
-          </div>
-
-          <!-- 摘要 -->
-          <div class="form-group">
-            <label for="excerpt">文章摘要 <span class="required">*</span></label>
-            <textarea
-              id="excerpt"
-              v-model="formData.excerpt"
-              rows="3"
-              placeholder="简要描述文章内容..."
-              :class="{ error: errors.excerpt }"
-            ></textarea>
-            <span v-if="errors.excerpt" class="error-message">{{ errors.excerpt }}</span>
-          </div>
-
-          <!-- 分类 -->
-          <div class="form-group">
-            <label>文章分类 <span class="required">*</span></label>
-            <div class="category-options">
-              <button
-                v-for="cat in categories"
-                :key="cat.key"
-                type="button"
-                class="category-btn"
-                :class="{ active: formData.category === cat.key }"
-                :style="{
-                  '--cat-color': cat.color,
-                  '--cat-glow': `0 0 10px ${cat.color}40`
-                }"
-                @click="selectCategory(cat.key)"
-              >
-                {{ cat.label }}
-              </button>
-            </div>
-          </div>
-
-          <!-- 封面 -->
-          <div class="form-group">
-            <label>封面图片 <span class="required">*</span></label>
-
-            <!-- 自定义上传区域 -->
-            <div class="custom-upload">
-              <input
-                ref="fileInput"
-                type="file"
-                accept="image/jpeg,image/png,image/gif,image/webp"
-                class="file-input"
-                @change="handleFileSelect"
-              />
-              <div class="upload-btn" @click="triggerFileInput">
-                <svg
-                  v-if="!isUploading"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                <span v-if="isUploading" class="upload-spinner"></span>
-                <span>{{ isUploading ? '上传中...' : '上传图片' }}</span>
+        <!-- PC端两栏布局 -->
+        <div class="two-column-layout">
+          <!-- 左栏：元数据表单 -->
+          <aside class="meta-panel">
+            <form class="article-form" @submit.prevent="submitForm">
+              <!-- 标题 -->
+              <div class="form-group">
+                <label for="title">文章标题 <span class="required">*</span></label>
+                <input
+                  id="title"
+                  v-model="formData.title"
+                  type="text"
+                  placeholder="输入一个有吸引力的标题..."
+                  :class="{ error: errors.title }"
+                />
+                <span v-if="errors.title" class="error-message">{{ errors.title }}</span>
               </div>
-              <span v-if="uploadError" class="error-message">{{ uploadError }}</span>
-            </div>
 
-            <!-- 自定义封面预览 -->
-            <div
-              v-if="formData.cover && !coverOptions.includes(formData.cover)"
-              class="custom-cover-preview"
-            >
-              <img :src="formData.cover" alt="自定义封面" />
-              <button type="button" class="remove-cover" @click="removeCustomCover">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
+              <!-- 摘要 -->
+              <div class="form-group">
+                <label for="excerpt">文章摘要 <span class="required">*</span></label>
+                <textarea
+                  id="excerpt"
+                  v-model="formData.excerpt"
+                  rows="3"
+                  placeholder="简要描述文章内容..."
+                  :class="{ error: errors.excerpt }"
+                ></textarea>
+                <span v-if="errors.excerpt" class="error-message">{{ errors.excerpt }}</span>
+              </div>
 
-            <div class="cover-grid">
-              <button
-                v-for="(cover, index) in coverOptions"
-                :key="index"
-                type="button"
-                class="cover-option"
-                :class="{ selected: formData.cover === cover }"
-                @click="selectCover(cover)"
-              >
-                <img :src="cover" :alt="`Cover ${index + 1}`" loading="lazy" />
-                <div class="cover-check">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="3"
+              <!-- 分类 -->
+              <div class="form-group">
+                <label>文章分类 <span class="required">*</span></label>
+                <div class="category-options">
+                  <button
+                    v-for="cat in categories"
+                    :key="cat.key"
+                    type="button"
+                    class="category-btn"
+                    :class="{ active: formData.category === cat.key }"
+                    :style="{
+                      '--cat-color': cat.color,
+                      '--cat-glow': `0 0 10px ${cat.color}40`
+                    }"
+                    @click="selectCategory(cat.key)"
                   >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
+                    {{ cat.label }}
+                  </button>
                 </div>
-              </button>
-            </div>
-            <span v-if="errors.cover" class="error-message">{{ errors.cover }}</span>
-          </div>
+              </div>
 
-          <!-- 标签 -->
-          <div class="form-group">
-            <label>文章标签</label>
-            <div class="tag-input-wrapper">
-              <input
-                v-model="tagInput"
-                type="text"
-                placeholder="输入标签后按回车添加..."
-                @keyup.enter.prevent="addTag"
+              <!-- 封面 -->
+              <div class="form-group">
+                <label>封面图片 <span class="required">*</span></label>
+
+                <!-- 自定义上传区域 -->
+                <div class="custom-upload">
+                  <input
+                    ref="fileInput"
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    class="file-input"
+                    @change="handleFileSelect"
+                  />
+                  <div class="upload-btn" @click="triggerFileInput">
+                    <svg
+                      v-if="!isUploading"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <span v-if="isUploading" class="upload-spinner"></span>
+                    <span>{{ isUploading ? '上传中...' : '上传图片' }}</span>
+                  </div>
+                  <span v-if="uploadError" class="error-message">{{ uploadError }}</span>
+                </div>
+
+                <!-- 自定义封面预览 -->
+                <div
+                  v-if="formData.cover && !coverOptions.includes(formData.cover)"
+                  class="custom-cover-preview"
+                >
+                  <img :src="formData.cover" alt="自定义封面" />
+                  <button type="button" class="remove-cover" @click="removeCustomCover">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div class="cover-grid">
+                  <button
+                    v-for="(cover, index) in coverOptions"
+                    :key="index"
+                    type="button"
+                    class="cover-option"
+                    :class="{ selected: formData.cover === cover }"
+                    @click="selectCover(cover)"
+                  >
+                    <img :src="cover" :alt="`Cover ${index + 1}`" loading="lazy" />
+                    <div class="cover-check">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="3"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </div>
+                  </button>
+                </div>
+                <span v-if="errors.cover" class="error-message">{{ errors.cover }}</span>
+              </div>
+
+              <!-- 标签 -->
+              <div class="form-group">
+                <label>文章标签</label>
+                <div class="tag-input-wrapper">
+                  <input
+                    v-model="tagInput"
+                    type="text"
+                    placeholder="输入标签后按回车添加..."
+                    @keyup.enter.prevent="addTag"
+                  />
+                  <button type="button" class="add-tag-btn" @click="addTag">添加</button>
+                </div>
+                <div class="tags-list" v-if="formData.tags.length > 0">
+                  <span v-for="tag in formData.tags" :key="tag" class="tag">
+                    {{ tag }}
+                    <button type="button" class="tag-remove" @click="removeTag(tag)">×</button>
+                  </span>
+                </div>
+              </div>
+
+              <!-- 提交按钮 -->
+              <div class="form-actions">
+                <button type="button" class="cancel-btn" @click="goBack">取消</button>
+                <button type="submit" class="submit-btn" :disabled="isSubmitting || isLoading">
+                  <span v-if="isSubmitting" class="spinner"></span>
+                  {{
+                    isSubmitting
+                      ? isEditMode
+                        ? '保存中...'
+                        : '发布中...'
+                      : isEditMode
+                        ? '保存修改'
+                        : '发布文章'
+                  }}
+                </button>
+              </div>
+
+              <span v-if="errors.submit" class="error-message submit-error">{{
+                errors.submit
+              }}</span>
+            </form>
+          </aside>
+
+          <!-- 右栏：文章内容编辑器 -->
+          <section class="content-panel">
+            <div class="content-header">
+              <label for="content">
+                文章内容 <span class="required">*</span>
+                <span class="read-time">预计阅读时间: {{ estimatedReadTime }} 分钟</span>
+              </label>
+            </div>
+            <div class="editor-wrapper" :class="{ error: errors.content }">
+              <TiptapEditor
+                id="content"
+                v-model="formData.content"
+                placeholder="开始编写文章内容..."
               />
-              <button type="button" class="add-tag-btn" @click="addTag">添加</button>
             </div>
-            <div class="tags-list" v-if="formData.tags.length > 0">
-              <span v-for="tag in formData.tags" :key="tag" class="tag">
-                {{ tag }}
-                <button type="button" class="tag-remove" @click="removeTag(tag)">×</button>
-              </span>
-            </div>
-          </div>
-
-          <!-- 内容 -->
-          <div class="form-group">
-            <label for="content">
-              文章内容 <span class="required">*</span>
-              <span class="read-time">预计阅读时间: {{ estimatedReadTime }} 分钟</span>
-            </label>
-            <TiptapEditor
-              id="content"
-              v-model="formData.content"
-              placeholder="开始编写文章内容..."
-              :class="{ error: errors.content }"
-            />
             <span v-if="errors.content" class="error-message">{{ errors.content }}</span>
-            <div class="content-hint">支持富文本格式：标题、粗体、斜体、代码、链接、列表等</div>
-          </div>
-
-          <!-- 提交按钮 -->
-          <div class="form-actions">
-            <button type="button" class="cancel-btn" @click="goBack">取消</button>
-            <button type="submit" class="submit-btn" :disabled="isSubmitting || isLoading">
-              <span v-if="isSubmitting" class="spinner"></span>
-              {{
-                isSubmitting
-                  ? isEditMode
-                    ? '保存中...'
-                    : '发布中...'
-                  : isEditMode
-                    ? '保存修改'
-                    : '发布文章'
-              }}
-            </button>
-          </div>
-
-          <span v-if="errors.submit" class="error-message submit-error">{{ errors.submit }}</span>
-        </form>
+          </section>
+        </div>
       </div>
     </main>
-
-    <SiteFooter />
   </div>
 </template>
 
@@ -508,68 +497,64 @@ const goBack = () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: linear-gradient(180deg, var(--color-bg-light) 0%, var(--color-bg) 100%);
 }
 
 .create-main {
   flex: 1;
-  padding: calc(70px + var(--space-2xl)) var(--space-lg) var(--space-2xl);
+  padding: 70px var(--space-sm) var(--space-sm);
+  display: flex;
+  flex-direction: column;
 }
 
 .create-container {
-  max-width: 800px;
+  flex: 1;
+  max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.create-header {
-  text-align: center;
-  margin-bottom: var(--space-2xl);
+/* 两栏布局 */
+.two-column-layout {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
 }
 
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-  margin-bottom: var(--space-lg);
-  transition: color var(--transition-fast);
+/* 左栏：元数据 */
+.meta-panel {
+  width: 280px;
+  flex-shrink: 0;
+  max-height: calc(100vh - 70px - var(--space-sm) * 2);
+  overflow-y: auto;
 }
 
-.back-link:hover {
-  color: var(--color-primary);
+/* 右栏：编辑器 */
+.content-panel {
+  flex: 1;
+  min-width: 0;
+  height: calc(100vh - 70px - var(--space-sm) * 2);
+  max-height: calc(100vh - 70px - var(--space-sm) * 2);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.page-title {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: var(--space-sm);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-xs);
+  flex-shrink: 0;
 }
 
-.page-desc {
-  color: var(--color-text-secondary);
-}
-
-.article-form {
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  padding: var(--space-xl);
-}
-
-.form-group {
-  margin-bottom: var(--space-xl);
-}
-
-.form-group label {
-  display: block;
+.content-header label {
   font-family: var(--font-display);
   font-weight: 600;
-  margin-bottom: var(--space-sm);
   color: var(--color-text-primary);
+  font-size: 0.8rem;
 }
 
 .required {
@@ -577,21 +562,77 @@ const goBack = () => {
 }
 
 .read-time {
-  float: right;
+  margin-left: var(--space-sm);
   font-weight: 400;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
+}
+
+.editor-wrapper {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-base);
+  flex: 1;
+  min-height: 0;
+}
+
+.editor-wrapper:focus-within {
+  border-color: var(--color-primary);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.1),
+    0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.editor-wrapper.error {
+  border-color: var(--color-accent);
+}
+
+/* 表单样式 */
+.article-form {
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--space-sm);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.form-group:last-of-type {
+  margin-bottom: var(--space-sm);
+}
+
+.form-group label {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--color-text-primary);
+  font-size: 0.8rem;
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: var(--space-md);
+  padding: 8px 10px;
   background: var(--color-bg-deep);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: var(--color-text-primary);
   transition: all var(--transition-base);
 }
@@ -600,7 +641,7 @@ const goBack = () => {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: var(--glow-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .form-group input.error,
@@ -611,27 +652,27 @@ const goBack = () => {
 .form-group input::placeholder,
 .form-group textarea::placeholder {
   color: var(--color-text-secondary);
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .error-message {
   display: block;
   color: var(--color-accent);
-  font-size: 0.875rem;
-  margin-top: var(--space-xs);
+  font-size: 0.75rem;
+  margin-top: 2px;
 }
 
 .category-options {
   display: flex;
-  gap: var(--space-sm);
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .category-btn {
-  padding: var(--space-sm) var(--space-md);
+  padding: 4px 10px;
   border-radius: 50px;
   font-family: var(--font-display);
-  font-size: 0.875rem;
+  font-size: 0.7rem;
   font-weight: 500;
   color: var(--color-text-secondary);
   background: var(--color-bg-deep);
@@ -654,14 +695,14 @@ const goBack = () => {
 .cover-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-sm);
+  gap: 6px;
 }
 
 .custom-upload {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-md);
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
 }
 
 .file-input {
@@ -671,19 +712,22 @@ const goBack = () => {
 .upload-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm) var(--space-md);
+  gap: 4px;
+  padding: 4px 10px;
   background: var(--color-bg-deep);
   border: 1px dashed var(--color-border);
   border-radius: 8px;
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-base);
+  font-weight: 500;
+  font-size: 0.75rem;
 }
 
 .upload-btn:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.05);
 }
 
 .upload-spinner {
@@ -698,13 +742,13 @@ const goBack = () => {
 .custom-cover-preview {
   position: relative;
   display: inline-block;
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm);
   border-radius: 8px;
   overflow: hidden;
 }
 
 .custom-cover-preview img {
-  width: 200px;
+  width: 150px;
   height: auto;
   border-radius: 8px;
   border: 2px solid var(--color-primary);
@@ -712,10 +756,10 @@ const goBack = () => {
 
 .remove-cover {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
   background: rgba(0, 0, 0, 0.7);
   border-radius: 50%;
   display: flex;
@@ -752,11 +796,12 @@ const goBack = () => {
 
 .cover-option:hover {
   border-color: var(--color-primary);
+  transform: scale(1.02);
 }
 
 .cover-option.selected {
   border-color: var(--color-primary);
-  box-shadow: var(--glow-primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
 
 .cover-check {
@@ -764,8 +809,8 @@ const goBack = () => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 32px;
-  height: 32px;
+  width: 22px;
+  height: 22px;
   background: var(--color-primary);
   border-radius: 50%;
   display: flex;
@@ -785,7 +830,7 @@ const goBack = () => {
 
 .tag-input-wrapper {
   display: flex;
-  gap: var(--space-sm);
+  gap: 6px;
 }
 
 .tag-input-wrapper input {
@@ -793,42 +838,43 @@ const goBack = () => {
 }
 
 .add-tag-btn {
-  padding: var(--space-sm) var(--space-md);
-  background: var(--color-secondary);
+  padding: 6px 12px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   color: white;
   border-radius: 8px;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.75rem;
   transition: all var(--transition-base);
 }
 
 .add-tag-btn:hover {
-  box-shadow: 0 0 15px rgba(123, 97, 255, 0.5);
+  box-shadow: 0 4px 15px rgba(123, 97, 255, 0.4);
 }
 
 .tags-list {
   display: flex;
-  gap: var(--space-sm);
+  gap: 4px;
   flex-wrap: wrap;
-  margin-top: var(--space-md);
+  margin-top: 6px;
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-sm);
-  background: var(--color-primary);
-  color: var(--color-bg-deep);
-  border-radius: 4px;
-  font-size: 0.875rem;
+  gap: 4px;
+  padding: 3px 8px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: white;
+  border-radius: 50px;
+  font-size: 0.7rem;
   font-weight: 500;
 }
 
 .tag-remove {
   font-size: 1rem;
   line-height: 1;
-  color: var(--color-bg-deep);
-  opacity: 0.7;
+  color: white;
+  opacity: 0.8;
   transition: opacity var(--transition-fast);
 }
 
@@ -836,48 +882,47 @@ const goBack = () => {
   opacity: 1;
 }
 
-.content-hint {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  margin-top: var(--space-xs);
-}
-
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-md);
-  margin-top: var(--space-xl);
+  gap: 8px;
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--color-border);
 }
 
 .cancel-btn {
-  padding: var(--space-md) var(--space-xl);
+  padding: 6px 16px;
   background: transparent;
   border: 1px solid var(--color-border);
   border-radius: 50px;
   color: var(--color-text-secondary);
   font-weight: 500;
+  font-size: 0.8rem;
   transition: all var(--transition-base);
 }
 
 .cancel-btn:hover {
   border-color: var(--color-text-primary);
   color: var(--color-text-primary);
+  background: var(--color-bg-light);
 }
 
 .submit-btn {
-  padding: var(--space-md) var(--space-xl);
+  padding: 6px 16px;
   background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   border-radius: 50px;
   color: white;
   font-weight: 600;
+  font-size: 0.8rem;
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 6px;
   transition: all var(--transition-base);
+  box-shadow: 0 4px 15px rgba(123, 97, 255, 0.3);
 }
 
 .submit-btn:hover:not(:disabled) {
-  box-shadow: var(--glow-primary);
+  box-shadow: 0 6px 20px rgba(123, 97, 255, 0.4);
   transform: translateY(-2px);
 }
 
@@ -906,17 +951,74 @@ const goBack = () => {
   margin-top: var(--space-md);
 }
 
-@media (max-width: 768px) {
-  .cover-grid {
-    grid-template-columns: repeat(2, 1fr);
+/* 移动端响应式 */
+@media (max-width: 1024px) {
+  .create-main {
+    overflow-y: auto;
+    height: calc(100vh - 70px);
   }
 
-  .page-title {
-    font-size: 1.5rem;
+  .two-column-layout {
+    flex-direction: column;
+    gap: var(--space-sm);
+    height: auto;
+    min-height: calc(100vh - 70px - var(--space-sm) * 2);
+  }
+
+  .meta-panel {
+    width: 100%;
+    flex: none;
+    max-height: none;
+  }
+
+  .content-panel {
+    width: 100%;
+    flex: none;
+    height: 500px;
+    max-height: 500px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .content-header {
+    flex-shrink: 0;
+    height: auto;
+    padding: 8px 0;
+  }
+
+  .content-panel .editor-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .editor-content-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .create-main {
+    padding: calc(70px + var(--space-sm)) var(--space-sm) var(--space-sm);
+  }
+
+  .create-container {
+    max-width: 100%;
   }
 
   .article-form {
-    padding: var(--space-lg);
+    padding: var(--space-sm);
+    border-radius: 10px;
+  }
+
+  .cover-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
   }
 
   .form-actions {
@@ -927,6 +1029,11 @@ const goBack = () => {
   .submit-btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .editor-wrapper {
+    border-radius: 10px;
+    min-height: 300px;
   }
 }
 </style>
