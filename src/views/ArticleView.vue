@@ -364,7 +364,7 @@ const processCodeBlocksInP = (content: string): string => {
     /<p>```(\w*)<\/p>([\s\S]*?)<p>```<\/p>/g,
     (_m, lang, innerContent) => {
       // 提取所有 <p> 标签内的内容并合并
-      const lines = innerContent.match(/<p>([\s\S]*?)<\/p>/g) || []
+      const lines: string[] = innerContent.match(/<p>([\s\S]*?)<\/p>/g) || []
       let code = lines
         .map((line) => {
           // 移除 <p> 和 </p> 标签
