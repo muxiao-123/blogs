@@ -3,7 +3,8 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import './styles/main.css'
-
+import './asserts/github-markdown.min.css'
+import 'highlight.js/styles/github.min.css'
 const app = createApp(App)
 
 // 全局错误处理

@@ -10,7 +10,7 @@ import Color from '@tiptap/extension-color'
 import Highlight from '@tiptap/extension-highlight'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import { watch, onBeforeUnmount } from 'vue'
-
+import { Markdown } from 'tiptap-markdown-3'
 const props = defineProps<{
   modelValue: string
   placeholder?: string
@@ -27,6 +27,7 @@ const editor = useEditor({
       heading: {
         levels: [1, 2, 3]
       }
+      // codeBlock: false
     }),
     Placeholder.configure({
       placeholder: props.placeholder || '开始编写内容...'
@@ -49,7 +50,16 @@ const editor = useEditor({
       types: ['heading', 'paragraph'],
       alignments: ['left', 'center', 'right', 'justify']
     }),
-    HorizontalRule
+    HorizontalRule,
+    // 使用支持高亮的 CodeBlockLowlight 替代
+    Markdown.configure({
+      html: true, // 关键：允许 HTML 输入/输出，解决混合格式需求
+      linkify: false, // 自动识别 URL
+      breaks: false, // 换行符转 <br>
+      transformPastedText: true, // 粘贴时自动解析 Markdown
+      transformCopiedText: true // 复制时转为 Markdown
+      // 🎯 核心：自定义代码块的序列化逻辑
+    })
   ],
   onUpdate: ({ editor }) => {
     emit('update:modelValue', editor.getHTML())

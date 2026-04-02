@@ -8,6 +8,7 @@ import { api } from '@/api/index'
 import type { Category } from '@/types'
 import NavBar from '@/components/NavBar.vue'
 import TiptapEditor from '@/components/TiptapEditor.vue'
+import domPurify from 'dompurify'
 
 const router = useRouter()
 const route = useRoute()
@@ -247,6 +248,9 @@ const estimatedReadTime = computed(() => {
 })
 
 const submitForm = async () => {
+  formData.value.content = domPurify.sanitize(formData.value.content)
+  // console.log(formData.value.content)
+  // return
   if (!validateForm()) return
 
   isSubmitting.value = true

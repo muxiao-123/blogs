@@ -10,7 +10,11 @@ import LikeButton from '@/components/LikeButton.vue'
 import FavoriteButton from '@/components/FavoriteButton.vue'
 import CommentSection from '@/components/CommentSection.vue'
 import type { Article } from '@/types'
-
+// import { marked } from 'marked'
+// import domPurify from 'dompurify'
+// import { markedHighlight } from 'marked-highlight'
+// import hljs from 'highlight.js'
+import { formatContent } from '../utils'
 const route = useRoute()
 const router = useRouter()
 const articleStore = useArticleStore()
@@ -84,7 +88,7 @@ const authorStats = ref({ articleCount: 0, totalViews: 0, totalLikes: 0 })
 const articleData = ref<Article | null>(null)
 
 const article = computed(() => articleData.value)
-
+const showArticleContent = ref('')
 const fetchArticle = async () => {
   const id = route.params.id as string
   try {
@@ -233,7 +237,11 @@ const loadArticle = async () => {
     }
     await fetchArticle()
     if (article.value) {
-      tocItems.value = parseToc(article.value.content)
+      const content = await formatContent(article.value.content)
+      showArticleContent.value = content
+      // console.log(content)
+      // tocItems.value = parseToc(article.value.content)
+      tocItems.value = parseToc(content)
     }
   } finally {
     isLoading.value = false
@@ -633,7 +641,8 @@ const escapeHtml = (text: string): string => {
       </aside>
 
       <article class="article-content">
-        <div class="content-body" v-html="renderContent(article.content)"></div>
+        <!-- <div class="content-body" v-html="renderContent(article.content)"></div> -->
+        <div class="markdown-body" v-html="showArticleContent"></div>
 
         <div class="article-tags" v-if="article.tags && article.tags.length > 0">
           <span class="tags-label">标签:</span>
@@ -1351,7 +1360,7 @@ const escapeHtml = (text: string): string => {
   font-size: 0.8125rem;
 }
 
-.content-body {
+/* .content-body {
   font-size: 1rem;
   line-height: 1.75;
   color: var(--color-text-primary);
@@ -1462,8 +1471,10 @@ const escapeHtml = (text: string): string => {
 
 .content-body :deep(strong) {
   color: var(--color-primary);
+} */
+.markdown-body {
+  background-color: transparent;
 }
-
 .article-tags {
   display: flex;
   align-items: center;
