@@ -30,7 +30,7 @@ const formData = ref<CreateArticleInput>({
   category: 'frontend',
   tags: []
 })
-
+const tiptapEditor = ref<InstanceType<typeof TiptapEditor>>()
 const STORAGE_KEY = 'lumina_draft_article'
 
 // 从 localStorage 恢复草稿
@@ -249,8 +249,11 @@ const estimatedReadTime = computed(() => {
 
 const submitForm = async () => {
   formData.value.content = domPurify.sanitize(formData.value.content)
-  // console.log(formData.value.content)
-  // return
+  const content = tiptapEditor.value?.getMarkdown()
+  if (!content) {
+    return
+  }
+  formData.value.content = content
   if (!validateForm()) return
 
   isSubmitting.value = true
@@ -486,6 +489,7 @@ const goBack = () => {
                 id="content"
                 v-model="formData.content"
                 placeholder="开始编写文章内容..."
+                ref="tiptapEditor"
               />
             </div>
             <span v-if="errors.content" class="error-message">{{ errors.content }}</span>

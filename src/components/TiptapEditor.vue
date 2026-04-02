@@ -142,6 +142,14 @@ const redo = () => editor.value?.chain().focus().redo().run()
 onBeforeUnmount(() => {
   editor.value?.destroy()
 })
+const getMarkdown = () => {
+  return (
+    editor.value?.storage as unknown as { markdown: { getMarkdown: () => string } }
+  ).markdown?.getMarkdown()
+}
+defineExpose({
+  getMarkdown
+})
 </script>
 
 <template>

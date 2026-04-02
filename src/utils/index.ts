@@ -1,6 +1,5 @@
 import { marked, RendererObject } from 'marked'
 import domPurify from 'dompurify'
-// import { markedHighlight } from 'marked-highlight'
 import hljs from 'highlight.js'
 
 function escapeHtml(str: string) {
