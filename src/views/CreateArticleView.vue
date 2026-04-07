@@ -932,9 +932,10 @@ const goBack = () => {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   padding-top: var(--space-xs);
   border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
 }
 
 .cancel-btn {
@@ -1122,13 +1123,17 @@ const goBack = () => {
   }
 
   .form-actions {
-    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .private-toggle {
+    order: -1;
+    margin-right: auto;
   }
 
   .cancel-btn,
   .submit-btn {
-    width: 100%;
-    justify-content: center;
+    white-space: nowrap;
   }
 
   .editor-wrapper {
