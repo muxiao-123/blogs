@@ -17,12 +17,6 @@ importers:
       '@tiptap/extension-highlight':
         specifier: ^3.22.0
         version: 3.22.0(@tiptap/core@3.21.0(@tiptap/pm@3.22.0))
-      '@tiptap/extension-horizontal-rule':
-        specifier: ^3.22.0
-        version: 3.22.0(@tiptap/core@3.21.0(@tiptap/pm@3.22.0))(@tiptap/pm@3.22.0)
-      '@tiptap/extension-link':
-        specifier: ^3.21.0
-        version: 3.21.0(@tiptap/core@3.21.0(@tiptap/pm@3.22.0))(@tiptap/pm@3.22.0)
       '@tiptap/extension-placeholder':
         specifier: ^3.21.0
         version: 3.21.0(@tiptap/extensions@3.21.0(@tiptap/core@3.21.0(@tiptap/pm@3.22.0))(@tiptap/pm@3.22.0))
@@ -50,9 +44,6 @@ importers:
       '@tiptap/extension-text-style':
         specifier: ^3.22.0
         version: 3.22.0(@tiptap/core@3.21.0(@tiptap/pm@3.22.0))
-      '@tiptap/extension-underline':
-        specifier: ^3.21.0
-        version: 3.21.0(@tiptap/core@3.21.0(@tiptap/pm@3.22.0))
       '@tiptap/starter-kit':
         specifier: ^3.21.0
         version: 3.21.0
@@ -68,9 +59,6 @@ importers:
       highlight.js:
         specifier: ^11.11.1
         version: 11.11.1
-      highlightjs-vue:
-        specifier: ^1.0.0
-        version: 1.0.0
       lowlight:
         specifier: ^3.3.0
         version: 3.3.0
@@ -156,6 +144,9 @@ importers:
       vite-plugin-cdn-import:
         specifier: ^1.0.1
         version: 1.0.1(rollup@4.59.1)(vite@6.4.1(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))
+      vite-plugin-compression:
+        specifier: ^0.5.1
+        version: 0.5.1(vite@6.4.1(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))
       vite-plugin-html:
         specifier: ^3.2.2
         version: 3.2.2(vite@6.4.1(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))
@@ -2075,9 +2066,6 @@ packages:
     resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
     engines: {node: '>=12.0.0'}
 
-  highlightjs-vue@1.0.0:
-    resolution: {integrity: sha512-PDEfEF102G23vHmPhLyPboFCD+BkMGu+GuJe2d9/eH4FsCwvgBpnc9n0pGE+ffKdph38s6foEZiEjdgHdzp+IA==}
-
   homedir-polyfill@1.0.3:
     resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
     engines: {node: '>=0.10.0'}
@@ -3078,6 +3066,11 @@ packages:
 
   vite-plugin-cdn-import@1.0.1:
     resolution: {integrity: sha512-lgjLxgwFSKvJLbqjVBirUZ0rQo00GpUGJzRpgQu8RyBw9LA7jaqG6fUMQzBC9qWmTGabPC3iOzwCcoi7PseRAQ==}
+
+  vite-plugin-compression@0.5.1:
+    resolution: {integrity: sha512-5QJKBDc+gNYVqL/skgFAP81Yuzo9R+EAf19d+EtsMF/i8kFUpNi3J/H01QD3Oo8zBQn+NzoCIFkpPLynoOzaJg==}
+    peerDependencies:
+      vite: '>=2.0.0'
 
   vite-plugin-externals@0.6.2:
     resolution: {integrity: sha512-R5oVY8xDJjLXLTs2XDYzvYbc/RTZuIwOx2xcFbYf+/VXB6eJuatDgt8jzQ7kZ+IrgwQhe6tU8U2fTyy72C25CQ==}
@@ -5241,8 +5234,6 @@ snapshots:
 
   highlight.js@11.11.1: {}
 
-  highlightjs-vue@1.0.0: {}
-
   homedir-polyfill@1.0.3:
     dependencies:
       parse-passwd: 1.0.0
@@ -6283,6 +6274,15 @@ snapshots:
     transitivePeerDependencies:
       - rollup
       - vite
+
+  vite-plugin-compression@0.5.1(vite@6.4.1(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3)):
+    dependencies:
+      chalk: 4.1.2
+      debug: 4.4.3
+      fs-extra: 10.1.0
+      vite: 6.4.1(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3)
+    transitivePeerDependencies:
+      - supports-color
 
   vite-plugin-externals@0.6.2(vite@6.4.1(@types/node@22.19.15)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3)):
     dependencies:

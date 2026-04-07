@@ -4,6 +4,7 @@ import { resolve } from 'path'
 import { readFileSync, writeFileSync } from 'fs'
 import { Plugin as CdnImportPlugin } from 'vite-plugin-cdn-import'
 import { visualizer } from 'rollup-plugin-visualizer'
+import viteCompression from 'vite-plugin-compression'
 // 自定义插件：自动添加 CSS 预加载标签
 function htmlInjectPlugin(): PluginOption {
   return {
@@ -68,7 +69,19 @@ export default defineConfig({
       open: false,
       gzipSize: true,
       brotliSize: true
-    }) as PluginOption
+    }) as PluginOption,
+    // Gzip 压缩插件
+    viteCompression({
+      algorithm: 'gzip',
+      threshold: 10240, // 仅压缩大于 10KB 的文件
+      ext: '.gz'
+    })
+    // // Brotli 压缩插件
+    // viteCompression({
+    //   algorithm: 'brotliCompress',
+    //   threshold: 10240,
+    //   ext: '.br'
+    // })
   ],
 
   resolve: {
@@ -140,8 +153,14 @@ export default defineConfig({
           if (id.includes('node_modules/pinia')) {
             return 'pinia'
           }
-          // Tiptap 编辑器（动态导入后单独打包）
-          if (id.includes('node_modules/@tiptap') || id.includes('node_modules/tiptap')) {
+          // Tiptap 整体打包（包括 prosemirror、tiptap-markdown 及所有扩展）
+          // 避免循环依赖，将它们合并为一个 chunk
+          if (
+            id.includes('node_modules/@tiptap') ||
+            id.includes('node_modules/tiptap') ||
+            id.includes('node_modules/prosemirror') ||
+            id.includes('tiptap-markdown')
+          ) {
             return 'tiptap'
           }
           // highlight.js 代码高亮

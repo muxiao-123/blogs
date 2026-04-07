@@ -2,17 +2,14 @@
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
-import Link from '@tiptap/extension-link'
-import Underline from '@tiptap/extension-underline'
-import TextAlign from '@tiptap/extension-text-align'
+// import TextAlign from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import Highlight from '@tiptap/extension-highlight'
-import HorizontalRule from '@tiptap/extension-horizontal-rule'
-import { Table } from '@tiptap/extension-table'
-import { TableRow } from '@tiptap/extension-table-row'
-import { TableCell } from '@tiptap/extension-table-cell'
-import { TableHeader } from '@tiptap/extension-table-header'
+// import { Table } from '@tiptap/extension-table'
+// import { TableRow } from '@tiptap/extension-table-row'
+// import { TableCell } from '@tiptap/extension-table-cell'
+// import { TableHeader } from '@tiptap/extension-table-header'
 import { watch, onBeforeUnmount } from 'vue'
 import { Markdown } from 'tiptap-markdown-3'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
@@ -34,21 +31,17 @@ const editor = useEditor({
       heading: {
         levels: [1, 2, 3]
       },
-      link: false,
-      codeBlock: false,
-      underline: false,
-      horizontalRule: false
+      link: {
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'editor-link'
+        }
+      },
+      codeBlock: false
     }),
     Placeholder.configure({
       placeholder: props.placeholder || '开始编写内容...'
     }),
-    Link.configure({
-      openOnClick: false,
-      HTMLAttributes: {
-        class: 'editor-link'
-      }
-    }),
-    Underline,
     TextStyle,
     Color.configure({
       types: ['textStyle']
@@ -56,31 +49,28 @@ const editor = useEditor({
     Highlight.configure({
       multicolor: true
     }),
-    TextAlign.configure({
-      types: ['heading', 'paragraph'],
-      alignments: ['left', 'center', 'right', 'justify']
-    }),
+    // TextAlign.configure({
+    //   types: ['heading', 'paragraph'],
+    //   alignments: ['left', 'center', 'right', 'justify']
+    // }),
     CodeBlockLowlight.configure({
-      // lowlight: createLowlight(common)
       lowlight
     }),
-    HorizontalRule,
-    Table.configure({
-      resizable: true,
-      HTMLAttributes: {
-        class: 'editor-table'
-      }
-    }),
-    TableRow,
-    TableCell,
-    TableHeader,
+    // Table.configure({
+    //   resizable: true,
+    //   HTMLAttributes: {
+    //     class: 'editor-table'
+    //   }
+    // }),
+    // TableRow,
+    // TableCell,
+    // TableHeader,
     Markdown.configure({
-      html: true, // 关键：允许 HTML 输入/输出，解决混合格式需求
-      linkify: false, // 自动识别 URL
-      breaks: false, // 换行符转 <br>
-      transformPastedText: true, // 粘贴时自动解析 Markdown
-      transformCopiedText: true // 复制时转为 Markdown
-      // 🎯 核心：自定义代码块的序列化逻辑
+      html: true,
+      linkify: false,
+      breaks: false,
+      transformPastedText: true,
+      transformCopiedText: true
     })
   ],
   editorProps: {
@@ -131,29 +121,29 @@ const toggleBlockquote = () => editor.value?.chain().focus().toggleBlockquote().
 const setHorizontalRule = () => editor.value?.chain().focus().setHorizontalRule().run()
 
 // 表格操作
-const insertTable = () => {
-  editor.value?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
-}
-const addColumnBefore = () => editor.value?.chain().focus().addColumnBefore().run()
-const addColumnAfter = () => editor.value?.chain().focus().addColumnAfter().run()
-const deleteColumn = () => editor.value?.chain().focus().deleteColumn().run()
-const addRowBefore = () => editor.value?.chain().focus().addRowBefore().run()
-const addRowAfter = () => editor.value?.chain().focus().addRowAfter().run()
-const deleteRow = () => editor.value?.chain().focus().deleteRow().run()
-const deleteTable = () => editor.value?.chain().focus().deleteTable().run()
-const mergeCells = () => editor.value?.chain().focus().mergeCells().run()
-const splitCell = () => editor.value?.chain().focus().splitCell().run()
-const toggleHeaderColumn = () => editor.value?.chain().focus().toggleHeaderColumn().run()
-const toggleHeaderRow = () => editor.value?.chain().focus().toggleHeaderRow().run()
-const toggleHeaderCell = () => editor.value?.chain().focus().toggleHeaderCell().run()
+// const insertTable = () => {
+//   editor.value?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+// }
+// const addColumnBefore = () => editor.value?.chain().focus().addColumnBefore().run()
+// const addColumnAfter = () => editor.value?.chain().focus().addColumnAfter().run()
+// const deleteColumn = () => editor.value?.chain().focus().deleteColumn().run()
+// const addRowBefore = () => editor.value?.chain().focus().addRowBefore().run()
+// const addRowAfter = () => editor.value?.chain().focus().addRowAfter().run()
+// const deleteRow = () => editor.value?.chain().focus().deleteRow().run()
+// const deleteTable = () => editor.value?.chain().focus().deleteTable().run()
+// const mergeCells = () => editor.value?.chain().focus().mergeCells().run()
+// const splitCell = () => editor.value?.chain().focus().splitCell().run()
+// const toggleHeaderColumn = () => editor.value?.chain().focus().toggleHeaderColumn().run()
+// const toggleHeaderRow = () => editor.value?.chain().focus().toggleHeaderRow().run()
+// const toggleHeaderCell = () => editor.value?.chain().focus().toggleHeaderCell().run()
 
 // 对齐
-const setTextAlign = (align: 'left' | 'center' | 'right' | 'justify') => {
-  editor.value?.chain().focus().setTextAlign(align).run()
-}
+// const setTextAlign = (align: 'left' | 'center' | 'right' | 'justify') => {
+//   editor.value?.chain().focus().setTextAlign(align).run()
+// }
 
-let tempTextColor: string | null
 // 颜色
+let tempTextColor: string | null
 const setTextColor = () => {
   if (tempTextColor) {
     tempTextColor = ''
@@ -359,7 +349,7 @@ defineExpose({
       </div>
 
       <!-- 对齐 -->
-      <div class="toolbar-group">
+      <!-- <div class="toolbar-group">
         <button
           type="button"
           :class="{ active: isTextAlignActive('left') }"
@@ -402,7 +392,7 @@ defineExpose({
             <path d="M3 21h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18v-2H3v2zm0-4h18V7H3v2zm0-6v2h18V3H3z" />
           </svg>
         </button>
-      </div>
+      </div> -->
 
       <!-- 列表 -->
       <div class="toolbar-group">
@@ -448,7 +438,7 @@ defineExpose({
       </div>
 
       <!-- 表格 -->
-      <div class="toolbar-group" v-if="editor">
+      <!-- <div class="toolbar-group" v-if="editor">
         <button
           type="button"
           @click="insertTable"
@@ -539,7 +529,7 @@ defineExpose({
             />
           </svg>
         </button>
-      </div>
+      </div> -->
 
       <!-- 链接 -->
       <div class="toolbar-group">
