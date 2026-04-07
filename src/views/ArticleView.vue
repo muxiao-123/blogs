@@ -186,7 +186,7 @@ const canEdit = computed(() => {
 
 const goToEdit = () => {
   if (!article.value) return
-  router.push({ name: 'CreateArticle', query: { id: article.value.id } })
+  router.push({ name: 'EditArticle', params: { id: article.value.id } })
 }
 
 const tocItems = ref<Array<{ id: string; text: string; level: number }>>([])

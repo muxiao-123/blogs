@@ -22,8 +22,8 @@ const isUploading = ref(false)
 const uploadError = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 
-const isEditMode = computed(() => !!route.query.id)
-const editArticleId = computed(() => route.query.id as string)
+const isEditMode = computed(() => !!route.params.id)
+const editArticleId = computed(() => route.params.id as string)
 
 // 检查是否为 lumina 用户（只有 lumina 才能使用私有标记）
 const isLuminaUser = computed(() => userStore.user?.username === 'lumina')
@@ -114,15 +114,18 @@ onMounted(async () => {
   if (isEditMode.value) {
     isLoading.value = true
     try {
-      await articleStore.init()
+      // 确保 articles 数据已加载
+      if (!articleStore.articles.length) {
+        await articleStore.init()
+      }
       const article = articleStore.getArticleById(editArticleId.value)
       if (article) {
         // 将 Markdown 格式转换为 HTML 格式，以便编辑器正确显示
-        const htmlContent = marked.parse(article.content || '') as string
+        const htmlContent = await marked.parse(article.content || '')
         formData.value = {
           title: article.title,
           excerpt: article.excerpt,
-          content: domPurify.sanitize(htmlContent),
+          content: domPurify.sanitize(htmlContent as string),
           cover: article.cover,
           category: article.category,
           tags: [...article.tags],
@@ -132,6 +135,7 @@ onMounted(async () => {
         errors.value.submit = '文章不存在'
       }
     } catch (e) {
+      console.error('加载文章失败:', e)
       errors.value.submit = '加载文章失败'
     } finally {
       isLoading.value = false

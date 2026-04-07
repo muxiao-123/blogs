@@ -74,7 +74,7 @@ const openArticle = (e: Event) => {
 }
 
 const goToEdit = () => {
-  router.push({ name: 'CreateArticle', query: { id: props.article.id } })
+  router.push({ name: 'EditArticle', params: { id: props.article.id } })
 }
 </script>
 <template>

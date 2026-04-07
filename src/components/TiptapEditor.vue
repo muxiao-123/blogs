@@ -10,7 +10,7 @@ import Highlight from '@tiptap/extension-highlight'
 // import { TableRow } from '@tiptap/extension-table-row'
 // import { TableCell } from '@tiptap/extension-table-cell'
 // import { TableHeader } from '@tiptap/extension-table-header'
-import { watch, onBeforeUnmount } from 'vue'
+import { watch, onBeforeUnmount, nextTick } from 'vue'
 import { Markdown } from 'tiptap-markdown-3'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import lowlight from '@/utils/lowlight-tool'
@@ -85,12 +85,15 @@ const editor = useEditor({
 
 watch(
   () => props.modelValue,
-  (newValue) => {
+  async (newValue) => {
+    // 使用 nextTick 确保编辑器已经初始化
+    await nextTick()
     const editorInstance = editor.value
     if (editorInstance && newValue !== editorInstance.getHTML()) {
       editorInstance.commands.setContent(newValue, { emitUpdate: false })
     }
-  }
+  },
+  { immediate: true }
 )
 
 const isActive = (type: string, attrs?: Record<string, unknown>) => {
