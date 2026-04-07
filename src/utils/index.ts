@@ -1,6 +1,8 @@
 import { marked, RendererObject } from 'marked'
 import domPurify from 'dompurify'
 import hljs from 'highlight.js'
+import hljsDefineVue from 'highlightjs-vue'
+hljsDefineVue(hljs)
 
 function escapeHtml(str: string) {
   return str.replace(/[&<>]/g, (m) => {

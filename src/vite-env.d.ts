@@ -6,3 +6,7 @@ declare module '*.vue' {
   const component: DefineComponent<{}, {}, any>
   export default component
 }
+declare module 'highlightjs-vue' {
+  import { HLJSApi } from 'highlight.js'
+  export default function (hljs: HLJSApi): void
+}
