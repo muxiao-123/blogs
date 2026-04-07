@@ -15,6 +15,7 @@ export interface Article {
   isFavorited?: boolean
   favorites?: number
   comments?: Comment[]
+  isPrivate?: boolean
 }
 
 export interface Author {

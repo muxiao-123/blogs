@@ -10,25 +10,25 @@ const router = Router()
 const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: '未登录' })
     }
-    
+
     const token = authHeader.replace(/^Bearer\s+/i, '').trim()
-    
+
     if (!token) {
       return res.status(401).json({ error: 'Token无效' })
     }
-    
+
     const user = await authService.verifyToken(token)
-    
+
     if (!user) {
       return res.status(401).json({ error: 'Token无效' })
     }
 
     // 将用户信息附加到请求对象
-    (req as any).user = user
+    ;(req as any).user = user
     next()
   } catch (error) {
     res.status(401).json({ error: '认证失败' })
@@ -68,26 +68,35 @@ router.get('/', async (req: Request, res: Response) => {
       articles = await articleService.getAll()
     }
 
-    // 检查用户是否登录，如果登录则添加点赞和收藏状态
+    // 获取当前用户信息（如果已登录）
     const authHeader = req.headers.authorization
+    let currentUser: any = null
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.replace(/^Bearer\s+/i, '').trim()
-      const user = await authService.verifyToken(token)
-      if (user) {
-        const userLikes = await authService.getLikes(user.id)
-        const userFavorites = await authService.getFavorites(user.id)
-        articles = articles.map(article => ({
-          ...article,
-          isLiked: userLikes.includes(article.id),
-          isFavorited: userFavorites.includes(article.id),
-          favorites: article.favorites || 0
-        }))
-      }
+      currentUser = await authService.verifyToken(token)
     }
 
-    // 为所有文章添加收藏数量（未登录时）
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      articles = articles.map(article => ({
+    // 过滤私有文章：只有登录用户为 lumina 时才显示私有文章
+    articles = articles.filter((article) => {
+      if (article.isPrivate) {
+        return currentUser && currentUser.username === 'lumina'
+      }
+      return true
+    })
+
+    // 检查用户是否登录，如果登录则添加点赞和收藏状态
+    if (currentUser) {
+      const userLikes = await authService.getLikes(currentUser.id)
+      const userFavorites = await authService.getFavorites(currentUser.id)
+      articles = articles.map((article) => ({
+        ...article,
+        isLiked: userLikes.includes(article.id),
+        isFavorited: userFavorites.includes(article.id),
+        favorites: article.favorites || 0
+      }))
+    } else {
+      // 为所有文章添加收藏数量（未登录时）
+      articles = articles.map((article) => ({
         ...article,
         favorites: article.favorites || 0
       }))
@@ -108,7 +117,24 @@ router.get('/user/stats', async (req: Request, res: Response) => {
       return res.status(400).json({ error: '缺少作者参数' })
     }
 
-    const articles = await articleService.getByAuthor(author as string)
+    let articles = await articleService.getByAuthor(author as string)
+
+    // 获取当前用户信息（如果已登录）
+    const authHeader = req.headers.authorization
+    let currentUser: any = null
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.replace(/^Bearer\s+/i, '').trim()
+      currentUser = await authService.verifyToken(token)
+    }
+
+    // 过滤私有文章：只有登录用户为 lumina 时才统计私有文章
+    articles = articles.filter((article) => {
+      if (article.isPrivate) {
+        return currentUser && currentUser.username === 'lumina'
+      }
+      return true
+    })
+
     const totalViews = articles.reduce((sum, article) => sum + (article.views || 0), 0)
     const totalLikes = articles.reduce((sum, article) => sum + (article.likes || 0), 0)
 
@@ -147,20 +173,24 @@ router.get('/stats', async (_req: Request, res: Response) => {
 router.get('/favorites', authenticate, async (req: Request, res: Response) => {
   try {
     const user = (req as any).user
-    
+
     if (!user || !user.id) {
       return res.status(400).json({ error: '用户信息无效' })
     }
-    
+
     const favoriteIds = await authService.getFavorites(user.id)
 
     // 获取收藏的文章详情
-    const articles = await Promise.all(
-      favoriteIds.map(id => articleService.getById(id))
-    )
+    const articles = await Promise.all(favoriteIds.map((id) => articleService.getById(id)))
 
-    // 过滤掉不存在的文章
-    res.json(articles.filter(Boolean))
+    // 过滤掉不存在的文章和私有文章（只有 lumina 用户可以看到私有文章）
+    const filteredArticles = articles.filter((article) => {
+      if (!article) return false
+      if (article.isPrivate && user.username !== 'lumina') return false
+      return true
+    })
+
+    res.json(filteredArticles)
   } catch (error) {
     res.status(500).json({ error: '获取收藏失败' })
   }
@@ -225,6 +255,19 @@ router.get('/:id', async (req: Request, res: Response) => {
       return res.status(404).json({ error: '文章不存在' })
     }
 
+    // 获取当前用户信息（如果已登录）
+    const authHeader = req.headers.authorization
+    let currentUser: any = null
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.replace(/^Bearer\s+/i, '').trim()
+      currentUser = await authService.verifyToken(token)
+    }
+
+    // 检查私有文章权限：只有登录用户为 lumina 时才显示私有文章
+    if (article.isPrivate && (!currentUser || currentUser.username !== 'lumina')) {
+      return res.status(404).json({ error: '文章不存在' })
+    }
+
     // 增加浏览数
     await articleService.incrementViews(req.params.id)
     const updatedArticle = await articleService.getById(req.params.id)
@@ -232,16 +275,11 @@ router.get('/:id', async (req: Request, res: Response) => {
     // 检查用户是否点赞和收藏
     let isLiked = false
     let isFavorited = false
-    const authHeader = req.headers.authorization
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.replace(/^Bearer\s+/i, '').trim()
-      const user = await authService.verifyToken(token)
-      if (user) {
-        const userLikes = await authService.getLikes(user.id)
-        isLiked = userLikes.includes(article.id)
-        const userFavorites = await authService.getFavorites(user.id)
-        isFavorited = userFavorites.includes(article.id)
-      }
+    if (currentUser) {
+      const userLikes = await authService.getLikes(currentUser.id)
+      isLiked = userLikes.includes(article.id)
+      const userFavorites = await authService.getFavorites(currentUser.id)
+      isFavorited = userFavorites.includes(article.id)
     }
 
     res.json({
@@ -259,20 +297,28 @@ router.get('/:id', async (req: Request, res: Response) => {
 // 创建文章
 router.post('/', authenticate, async (req: Request, res: Response) => {
   try {
-    const { title, excerpt, content, cover, category, tags } = req.body
+    const { title, excerpt, content, cover, category, tags, isPrivate } = req.body
+    const currentUser = (req as any).user
 
     if (!title || !content || !category) {
       return res.status(400).json({ error: '缺少必要字段' })
     }
 
-    const article = await articleService.create({
-      title,
-      excerpt: excerpt || content.slice(0, 100),
-      content,
-      cover: cover || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80',
-      category,
-      tags: tags || []
-    }, (req as any).user)
+    // 只有 lumina 用户才能设置私有标记
+    const articleIsPrivate = currentUser.username === 'lumina' ? isPrivate : false
+
+    const article = await articleService.create(
+      {
+        title,
+        excerpt: excerpt || content.slice(0, 100),
+        content,
+        cover: cover || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80',
+        category,
+        tags: tags || [],
+        isPrivate: articleIsPrivate
+      },
+      currentUser
+    )
 
     res.status(201).json(article)
   } catch (error) {
@@ -283,16 +329,25 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 // 更新文章
 router.put('/:id', authenticate, async (req: Request, res: Response) => {
   try {
-    const { title, excerpt, content, cover, category, tags } = req.body
+    const { title, excerpt, content, cover, category, tags, isPrivate } = req.body
+    const currentUser = (req as any).user
 
-    const article = await articleService.update(req.params.id, {
+    // 构建更新数据
+    const updateData: any = {
       title,
       excerpt,
       content,
       cover,
       category,
       tags
-    }, (req as any).user)
+    }
+
+    // 只有 lumina 用户才能修改私有标记
+    if (currentUser.username === 'lumina') {
+      updateData.isPrivate = isPrivate === true
+    }
+
+    const article = await articleService.update(req.params.id, updateData, currentUser)
 
     if (!article) {
       return res.status(404).json({ error: '文章不存在或没有权限' })

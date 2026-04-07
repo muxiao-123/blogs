@@ -56,21 +56,26 @@ class ArticleService {
       cover: input.cover,
       category: input.category,
       tags: input.tags,
-      author: currentUser ? {
-        name: currentUser.username,
-        avatar: currentUser.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.username}`,
-        bio: currentUser.bio || '热爱技术的开发者'
-      } : {
-        name: 'Lumina',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=lumina',
-        bio: '热爱技术的开发者'
-      },
+      author: currentUser
+        ? {
+            name: currentUser.username,
+            avatar:
+              currentUser.avatar ||
+              `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.username}`,
+            bio: currentUser.bio || '热爱技术的开发者'
+          }
+        : {
+            name: 'Lumina',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=lumina',
+            bio: '热爱技术的开发者'
+          },
       publishDate: new Date().toISOString().split('T')[0],
       readTime,
       views: 0,
       likes: 0,
       isLiked: false,
-      comments: []
+      comments: [],
+      isPrivate: input.isPrivate || false
     }
 
     await articleModel.create(newArticle)
@@ -78,7 +83,11 @@ class ArticleService {
   }
 
   // 更新文章
-  async update(id: string, input: Partial<CreateArticleInput>, currentUser?: any): Promise<Article | null> {
+  async update(
+    id: string,
+    input: Partial<CreateArticleInput>,
+    currentUser?: any
+  ): Promise<Article | null> {
     if (!articleModel) throw new Error('ArticleService not initialized')
 
     const existing = await articleModel.findById(id)
@@ -90,10 +99,18 @@ class ArticleService {
     }
 
     const updateData: Partial<Article> = {
-      ...input,
-      readTime: input.content
-        ? Math.ceil(input.content.length / 500)
-        : existing.readTime
+      title: input.title,
+      excerpt: input.excerpt,
+      content: input.content,
+      cover: input.cover,
+      category: input.category,
+      tags: input.tags,
+      readTime: input.content ? Math.ceil(input.content.length / 500) : existing.readTime
+    }
+
+    // 只有当 input.isPrivate 明确传入时才更新
+    if (input.isPrivate !== undefined) {
+      updateData.isPrivate = input.isPrivate
     }
 
     return articleModel.update(id, updateData)
@@ -123,7 +140,7 @@ class ArticleService {
   // 删除文章
   async delete(id: string, currentUser?: any): Promise<boolean> {
     if (!articleModel) throw new Error('ArticleService not initialized')
-    
+
     const existing = await articleModel.findById(id)
     if (!existing) return false
 
@@ -131,7 +148,7 @@ class ArticleService {
     if (currentUser && existing.author.name !== currentUser.username) {
       return false
     }
-    
+
     return articleModel.delete(id)
   }
 

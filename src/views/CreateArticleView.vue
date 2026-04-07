@@ -22,13 +22,17 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const isEditMode = computed(() => !!route.params.id)
 const editArticleId = computed(() => route.params.id as string)
 
+// 检查是否为 lumina 用户（只有 lumina 才能使用私有标记）
+const isLuminaUser = computed(() => userStore.user?.username === 'lumina')
+
 const formData = ref<CreateArticleInput>({
   title: '',
   excerpt: '',
   content: '',
   cover: '',
   category: 'frontend',
-  tags: []
+  tags: [],
+  isPrivate: false
 })
 const tiptapEditor = ref<InstanceType<typeof TiptapEditor>>()
 const STORAGE_KEY = 'lumina_draft_article'
@@ -70,7 +74,8 @@ const saveDraft = () => {
     content: formData.value.content,
     cover: formData.value.cover,
     category: formData.value.category,
-    tags: formData.value.tags
+    tags: formData.value.tags,
+    isPrivate: formData.value.isPrivate
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(draft))
 }
@@ -115,7 +120,8 @@ onMounted(async () => {
           content: article.content,
           cover: article.cover,
           category: article.category,
-          tags: [...article.tags]
+          tags: [...article.tags],
+          isPrivate: article.isPrivate === true
         }
       } else {
         errors.value.submit = '文章不存在'
@@ -255,7 +261,6 @@ const submitForm = async () => {
   }
   formData.value.content = content
   if (!validateForm()) return
-
   isSubmitting.value = true
 
   try {
@@ -451,6 +456,29 @@ const goBack = () => {
                     <button type="button" class="tag-remove" @click="removeTag(tag)">×</button>
                   </span>
                 </div>
+              </div>
+
+              <!-- 私有标记（仅 lumina 用户可见） -->
+              <div class="form-group" v-if="isLuminaUser">
+                <label class="checkbox-label">
+                  <input type="checkbox" v-model="formData.isPrivate" class="checkbox-input" />
+                  <span class="checkbox-custom"></span>
+                  <span class="checkbox-text">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    私有文章
+                  </span>
+                </label>
+                <p class="private-hint">私有文章仅对 lumina 用户可见</p>
               </div>
 
               <!-- 提交按钮 -->
@@ -957,6 +985,79 @@ const goBack = () => {
 .submit-error {
   text-align: center;
   margin-top: var(--space-md);
+}
+
+/* 私有标记样式 */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  padding: 8px 12px;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  transition: all var(--transition-base);
+}
+
+.checkbox-label:hover {
+  border-color: var(--color-primary);
+}
+
+.checkbox-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkbox-custom {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: 4px;
+  transition: all var(--transition-base);
+  flex-shrink: 0;
+}
+
+.checkbox-input:checked + .checkbox-custom {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.checkbox-input:checked + .checkbox-custom::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.checkbox-text svg {
+  color: var(--color-text-secondary);
+}
+
+.private-hint {
+  margin-top: 4px;
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
 }
 
 /* 移动端响应式 */

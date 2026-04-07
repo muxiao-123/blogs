@@ -21,6 +21,7 @@ export interface Article {
   isFavorited?: boolean
   favorites: number
   comments: Comment[]
+  isPrivate?: boolean
 }
 
 export interface Comment {
@@ -49,6 +50,7 @@ export interface CreateArticleInput {
   cover: string
   category: string
   tags: string[]
+  isPrivate?: boolean
 }
 
 // 使用环境变量，支持开发/生产环境切换
@@ -130,37 +132,70 @@ class ApiService {
 
   // 获取所有文章
   async getArticles(params?: { category?: string; tag?: string; q?: string }): Promise<Article[]> {
+    // 从localStorage获取token，确保私有文章过滤正确
+    const token = localStorage.getItem('token')
+
     const searchParams = new URLSearchParams()
     if (params?.category) searchParams.set('category', params.category)
     if (params?.tag) searchParams.set('tag', params.tag)
     if (params?.q) searchParams.set('q', params.q)
 
     const query = searchParams.toString()
-    return this.request<Article[]>(`${API_BASE}/articles${query ? `?${query}` : ''}`)
+    const url = `${API_BASE}/articles${query ? `?${query}` : ''}`
+
+    // 发送请求，如果存在token则包含Authorization头
+    if (token) {
+      return this.request<Article[]>(url, {
+        headers: { Authorization: `Bearer ${token.trim()}` }
+      })
+    }
+    return this.request<Article[]>(url)
   }
 
   // 获取单个文章
   async getArticle(id: string): Promise<Article> {
-    return this.request<Article>(`${API_BASE}/articles/${id}`)
+    const token = localStorage.getItem('token')
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token.trim()}`
+    }
+    return this.request<Article>(`${API_BASE}/articles/${id}`, { headers })
   }
 
   // 获取单个文章（带用户点赞状态）
   async getArticleById(id: string): Promise<Article> {
-    return this.request<Article>(`${API_BASE}/articles/${id}`)
+    const token = localStorage.getItem('token')
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token.trim()}`
+    }
+    return this.request<Article>(`${API_BASE}/articles/${id}`, { headers })
   }
 
   // 创建文章
   async createArticle(input: CreateArticleInput): Promise<Article> {
+    const token = localStorage.getItem('token')
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token.trim()}`
+    }
     return this.request<Article>(`${API_BASE}/articles`, {
       method: 'POST',
+      headers,
       body: JSON.stringify(input)
     })
   }
 
   // 更新文章
   async updateArticle(id: string, input: Partial<CreateArticleInput>): Promise<Article> {
+    const token = localStorage.getItem('token')
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token.trim()}`
+    }
     return this.request<Article>(`${API_BASE}/articles/${id}`, {
       method: 'PUT',
+      headers,
       body: JSON.stringify(input)
     })
   }
@@ -204,14 +239,25 @@ class ApiService {
   async getUserStats(
     author: string
   ): Promise<{ articleCount: number; totalViews: number; totalLikes: number }> {
+    const token = localStorage.getItem('token')
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token.trim()}`
+    }
     return this.request<{ articleCount: number; totalViews: number; totalLikes: number }>(
-      `${API_BASE}/articles/user/stats?author=${encodeURIComponent(author)}`
+      `${API_BASE}/articles/user/stats?author=${encodeURIComponent(author)}`,
+      { headers }
     )
   }
 
   // 获取用户收藏的文章
   async getFavorites(): Promise<Article[]> {
-    return this.request<Article[]>(`${API_BASE}/articles/favorites`)
+    const token = localStorage.getItem('token')
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token.trim()}`
+    }
+    return this.request<Article[]>(`${API_BASE}/articles/favorites`, { headers })
   }
 
   // 添加/取消收藏

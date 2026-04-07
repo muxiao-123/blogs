@@ -10,6 +10,7 @@ export interface CreateArticleInput {
   cover: string
   category: Category
   tags: string[]
+  isPrivate?: boolean
 }
 
 export interface AddCommentInput {
