@@ -19,8 +19,8 @@ const isUploading = ref(false)
 const uploadError = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 
-const isEditMode = computed(() => !!route.params.id)
-const editArticleId = computed(() => route.params.id as string)
+const isEditMode = computed(() => !!route.query.id)
+const editArticleId = computed(() => route.query.id as string)
 
 // 检查是否为 lumina 用户（只有 lumina 才能使用私有标记）
 const isLuminaUser = computed(() => userStore.user?.username === 'lumina')
@@ -458,12 +458,18 @@ const goBack = () => {
                 </div>
               </div>
 
-              <!-- 私有标记（仅 lumina 用户可见） -->
-              <div class="form-group" v-if="isLuminaUser">
-                <label class="checkbox-label">
-                  <input type="checkbox" v-model="formData.isPrivate" class="checkbox-input" />
-                  <span class="checkbox-custom"></span>
-                  <span class="checkbox-text">
+              <!-- 提交按钮 -->
+              <div class="form-actions">
+                <!-- 私有标记（仅 lumina 用户可见） -->
+                <div
+                  v-if="isLuminaUser"
+                  class="private-toggle"
+                  @click="formData.isPrivate = !formData.isPrivate"
+                >
+                  <span class="toggle-track" :class="{ active: formData.isPrivate }">
+                    <span class="toggle-thumb"></span>
+                  </span>
+                  <span class="toggle-label">
                     <svg
                       width="14"
                       height="14"
@@ -475,14 +481,9 @@ const goBack = () => {
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
-                    私有文章
+                    私有
                   </span>
-                </label>
-                <p class="private-hint">私有文章仅对 lumina 用户可见</p>
-              </div>
-
-              <!-- 提交按钮 -->
-              <div class="form-actions">
+                </div>
                 <button type="button" class="cancel-btn" @click="goBack">取消</button>
                 <button type="submit" class="submit-btn" :disabled="isSubmitting || isLoading">
                   <span v-if="isSubmitting" class="spinner"></span>
@@ -921,7 +922,8 @@ const goBack = () => {
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
   padding-top: var(--space-xs);
   border-top: 1px solid var(--color-border);
 }
@@ -988,76 +990,56 @@ const goBack = () => {
 }
 
 /* 私有标记样式 */
-.checkbox-label {
+.private-toggle {
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
   user-select: none;
-  padding: 8px 12px;
-  background: var(--color-bg-deep);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  transition: all var(--transition-base);
 }
 
-.checkbox-label:hover {
-  border-color: var(--color-primary);
-}
-
-.checkbox-input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-}
-
-.checkbox-custom {
+.toggle-track {
   position: relative;
-  width: 20px;
-  height: 20px;
-  background: var(--color-bg);
-  border: 2px solid var(--color-border);
-  border-radius: 4px;
-  transition: all var(--transition-base);
-  flex-shrink: 0;
+  width: 40px;
+  height: 22px;
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: 11px;
+  transition: all 0.3s ease;
 }
 
-.checkbox-input:checked + .checkbox-custom {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-}
-
-.checkbox-input:checked + .checkbox-custom::after {
-  content: '';
+.toggle-thumb {
   position: absolute;
-  left: 6px;
   top: 2px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--color-text-secondary);
+  border-radius: 50%;
+  transition: all 0.3s ease;
 }
 
-.checkbox-text {
+.toggle-track.active {
+  background: rgba(123, 97, 255, 0.2);
+  border-color: rgba(123, 97, 255, 0.5);
+}
+
+.toggle-track.active .toggle-thumb {
+  left: 20px;
+  background: var(--color-secondary);
+}
+
+.toggle-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--color-text-primary);
-}
-
-.checkbox-text svg {
   color: var(--color-text-secondary);
 }
 
-.private-hint {
-  margin-top: 4px;
-  font-size: 0.7rem;
-  color: var(--color-text-secondary);
+.toggle-label svg {
+  color: inherit;
 }
 
 /* 移动端响应式 */

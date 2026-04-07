@@ -14,7 +14,7 @@
     "format": "prettier --write src/",
     "format:check": "prettier --check src/",
     "prepare": "husky",
-    "commit": "cz"
+    "commit": "git add . && cz"
   },
   "dependencies": {
     "@tiptap/extension-color": "^3.22.0",

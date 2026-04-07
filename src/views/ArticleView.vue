@@ -180,6 +180,19 @@ const formatDate = (dateStr: string | undefined) => {
   })
 }
 
+// 判断当前用户是否有权限编辑（作者本人或 lumina 用户）
+const canEdit = computed(() => {
+  if (!article.value || !userStore.user) return false
+  return (
+    article.value.author.name === userStore.user.username || userStore.user.username === 'lumina'
+  )
+})
+
+const goToEdit = () => {
+  if (!article.value) return
+  router.push({ name: 'CreateArticle', query: { id: article.value.id } })
+}
+
 const tocItems = ref<Array<{ id: string; text: string; level: number }>>([])
 
 const hasToc = computed(() => tocItems.value.length > 0)
@@ -580,7 +593,33 @@ const escapeHtml = (text: string): string => {
           </span>
           <span class="publish-date">{{ formatDate(article.publishDate) }}</span>
         </div>
-        <h1 class="article-title">{{ article.title }}</h1>
+        <h1 class="article-title">
+          {{ article.title }}
+          <!-- 私有标识 -->
+          <span v-if="article.isPrivate" class="private-badge" title="私有文章">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 1C8.676 1 6 3.676 6 7v2H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2V7c0-3.324-2.676-6-6-6zm0 2c2.276 0 4 1.724 4 4v2H8V7c0-2.276 1.724-4 4-4zm0 10a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"
+              />
+            </svg>
+            私有
+          </span>
+          <!-- 编辑按钮 -->
+          <button v-if="canEdit" class="edit-btn" @click="goToEdit" title="编辑文章">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            编辑
+          </button>
+        </h1>
         <div class="article-meta">
           <div class="author-info">
             <img :src="article.author.avatar" :alt="article.author.name" class="avatar" />
@@ -919,6 +958,43 @@ const escapeHtml = (text: string): string => {
   font-weight: 700;
   line-height: 1.25;
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.private-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  background: rgba(123, 97, 255, 0.9);
+  border-radius: 20px;
+}
+
+.edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+  color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--color-primary);
 }
 
 .article-meta {
