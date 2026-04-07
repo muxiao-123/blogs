@@ -248,7 +248,6 @@ const loadArticle = async () => {
     if (article.value) {
       const content = await formatContent(article.value.content)
       showArticleContent.value = content.res
-      // tocItems.value = parseToc(content.res)
       tocItems.value = content.markDir ?? []
     }
   } finally {
@@ -543,6 +542,7 @@ const handleLikeChange = (liked: boolean, likes: number) => {
     </section>
   </div>
 
+  <!-- 全屏加载状态 -->
   <div class="loading" v-else-if="isLoading">
     <div class="loading-spinner"></div>
     <p>加载中...</p>

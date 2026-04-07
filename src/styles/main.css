@@ -59,6 +59,9 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  transition:
+    background-color var(--transition-base),
+    color var(--transition-base);
 }
 
 body {
@@ -68,9 +71,7 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: clip;
-  transition:
-    background var(--transition-base),
-    color var(--transition-base);
+  /* 移除 body 的 transition，由 html 统一处理 */
 }
 
 #app {

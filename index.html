@@ -9,6 +9,17 @@
       name="description"
       content="Lumina Blog - 探索技术的星辰大海，分享前端、后端、全栈开发知识"
     />
+
+    <!-- 主题初始化脚本：在 CSS 加载前执行，避免闪烁 -->
+    <script>
+      ;(function () {
+        const stored = localStorage.getItem('theme')
+        const theme =
+          stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        document.documentElement.setAttribute('data-theme', theme)
+      })()
+    </script>
+
     <!-- 预连接外部资源 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
