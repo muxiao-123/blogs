@@ -1058,10 +1058,18 @@ const escapeHtml = (text: string): string => {
 
 .article-sidebar {
   position: sticky;
-  top: 100px;
+  top: 90px;
   flex-shrink: 0;
-  width: 180px;
-  height: fit-content;
+  width: 210px;
+  height: calc(100vh - 120px);
+  overflow-y: auto;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--space-lg);
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
 }
 
 .article-content {
@@ -1395,10 +1403,10 @@ const escapeHtml = (text: string): string => {
 }
 
 .toc {
-  background: var(--color-card-bg);
+  /* background: var(--color-card-bg);
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  padding: var(--space-lg);
+  padding: var(--space-lg); */
 }
 
 .toc h4 {
