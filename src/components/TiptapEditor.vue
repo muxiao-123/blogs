@@ -9,6 +9,10 @@ import { TextStyle } from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import Highlight from '@tiptap/extension-highlight'
 import HorizontalRule from '@tiptap/extension-horizontal-rule'
+import { Table } from '@tiptap/extension-table'
+import { TableRow } from '@tiptap/extension-table-row'
+import { TableCell } from '@tiptap/extension-table-cell'
+import { TableHeader } from '@tiptap/extension-table-header'
 import { watch, onBeforeUnmount } from 'vue'
 import { Markdown } from 'tiptap-markdown-3'
 const props = defineProps<{
@@ -51,6 +55,15 @@ const editor = useEditor({
       alignments: ['left', 'center', 'right', 'justify']
     }),
     HorizontalRule,
+    Table.configure({
+      resizable: true,
+      HTMLAttributes: {
+        class: 'editor-table'
+      }
+    }),
+    TableRow,
+    TableCell,
+    TableHeader,
     // 使用支持高亮的 CodeBlockLowlight 替代
     Markdown.configure({
       html: true, // 关键：允许 HTML 输入/输出，解决混合格式需求
@@ -102,6 +115,23 @@ const toggleBulletList = () => editor.value?.chain().focus().toggleBulletList().
 const toggleOrderedList = () => editor.value?.chain().focus().toggleOrderedList().run()
 const toggleBlockquote = () => editor.value?.chain().focus().toggleBlockquote().run()
 const setHorizontalRule = () => editor.value?.chain().focus().setHorizontalRule().run()
+
+// 表格操作
+const insertTable = () => {
+  editor.value?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+}
+const addColumnBefore = () => editor.value?.chain().focus().addColumnBefore().run()
+const addColumnAfter = () => editor.value?.chain().focus().addColumnAfter().run()
+const deleteColumn = () => editor.value?.chain().focus().deleteColumn().run()
+const addRowBefore = () => editor.value?.chain().focus().addRowBefore().run()
+const addRowAfter = () => editor.value?.chain().focus().addRowAfter().run()
+const deleteRow = () => editor.value?.chain().focus().deleteRow().run()
+const deleteTable = () => editor.value?.chain().focus().deleteTable().run()
+const mergeCells = () => editor.value?.chain().focus().mergeCells().run()
+const splitCell = () => editor.value?.chain().focus().splitCell().run()
+const toggleHeaderColumn = () => editor.value?.chain().focus().toggleHeaderColumn().run()
+const toggleHeaderRow = () => editor.value?.chain().focus().toggleHeaderRow().run()
+const toggleHeaderCell = () => editor.value?.chain().focus().toggleHeaderCell().run()
 
 // 对齐
 const setTextAlign = (align: 'left' | 'center' | 'right' | 'justify') => {
@@ -390,6 +420,100 @@ defineExpose({
         </button>
       </div>
 
+      <!-- 表格 -->
+      <div class="toolbar-group" v-if="editor">
+        <button
+          type="button"
+          @click="insertTable"
+          title="插入表格"
+          :disabled="!editor.can().insertTable({ rows: 3, cols: 3, withHeaderRow: true })"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M20 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM10 17H5v-2h5v2zm0-4H5v-2h5v2zm0-4H5V7h5v2zm9 8h-7v-2h7v2zm0-4h-7v-2h7v2zm0-4h-7V7h7v2z"
+            />
+          </svg>
+        </button>
+        <button
+          type="button"
+          @click="addColumnBefore"
+          title="左侧插入列"
+          :disabled="!editor.isActive('table')"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11 7v10H9v-4H5v4H3V7h2v4h4V7h2zm10 0v4h-2v4h4v-4h-2v-4z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          @click="addColumnAfter"
+          title="右侧插入列"
+          :disabled="!editor.isActive('table')"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M13 7v10h2v-4h4v4h2V7h-2v4h-4V7h-2zm-2 0H9v4H5v4H3V7h2v4h4V7h2zm-4 8v-4h2v4H7zm4 0v-4h2v4h-2zm4 0v-4h2v4h-2z"
+            />
+          </svg>
+        </button>
+        <button
+          type="button"
+          @click="deleteColumn"
+          title="删除列"
+          :disabled="!editor.isActive('table')"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M15 2H9v2h6V2zm-2 8h2v12H5V10h2V8H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h8v-2H5v-2h8v-2zm-2 4H7v6h4v-6z"
+            />
+          </svg>
+        </button>
+        <button
+          type="button"
+          @click="addRowBefore"
+          title="上方插入行"
+          :disabled="!editor.isActive('table')"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 13v2h10v-2H7zm4-6v4h2V7h4v2h2V5H9v6H7V7h4z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          @click="addRowAfter"
+          title="下方插入行"
+          :disabled="!editor.isActive('table')"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 7v4h10V7h-2v4h-2V7H9v4H7V7zm10 6v2h-4v2h-2v-2h-4v-2h4v-2h2v2h4z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          @click="deleteRow"
+          title="删除行"
+          :disabled="!editor.isActive('table')"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M7 15v2h10v-2H7zm0-4h10v-2H7v-2h10v-2H7V7h10V5H7v4H5V5c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2h-2v2h2c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2v-4h2v4h10v-4H9z"
+            />
+          </svg>
+        </button>
+        <button
+          type="button"
+          @click="deleteTable"
+          title="删除表格"
+          :disabled="!editor.isActive('table')"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5l-1-1h-5l-1 1H5v2h14V4h-3.5z"
+            />
+          </svg>
+        </button>
+      </div>
+
       <!-- 链接 -->
       <div class="toolbar-group">
         <button
@@ -599,5 +723,60 @@ defineExpose({
   background-color: #fef08a;
   padding: 0.1rem 0.2rem;
   border-radius: 2px;
+}
+
+/* 表格样式 */
+.editor-content :deep(.ProseMirror table) {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.editor-content :deep(.ProseMirror table td),
+.editor-content :deep(.ProseMirror table th) {
+  border: 1px solid var(--color-border);
+  padding: 8px 12px;
+  min-width: 80px;
+  vertical-align: top;
+  position: relative;
+}
+
+.editor-content :deep(.ProseMirror table th) {
+  background: var(--color-bg-light);
+  font-weight: 600;
+  text-align: left;
+}
+
+.editor-content :deep(.ProseMirror table .selectedCell:after) {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(123, 97, 255, 0.2);
+  pointer-events: none;
+}
+
+.editor-content :deep(.ProseMirror .column-resize-handle) {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background: var(--color-primary);
+  cursor: col-resize;
+  pointer-events: all;
+}
+
+.editor-content :deep(.ProseMirror table p) {
+  margin: 0;
+}
+
+/* 禁用按钮样式 */
+.toolbar-group button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 </style>
