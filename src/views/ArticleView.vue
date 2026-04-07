@@ -251,10 +251,9 @@ const loadArticle = async () => {
     await fetchArticle()
     if (article.value) {
       const content = await formatContent(article.value.content)
-      showArticleContent.value = content
-      // console.log(content)
-      // tocItems.value = parseToc(article.value.content)
-      tocItems.value = parseToc(content)
+      showArticleContent.value = content.res
+      // tocItems.value = parseToc(content.res)
+      tocItems.value = content.markDir ?? []
     }
   } finally {
     isLoading.value = false
@@ -1435,119 +1434,6 @@ const escapeHtml = (text: string): string => {
   padding-left: var(--space-xl);
   font-size: 0.8125rem;
 }
-
-/* .content-body {
-  font-size: 1rem;
-  line-height: 1.75;
-  color: var(--color-text-primary);
-}
-
-.content-body :deep(h1),
-.content-body :deep(h2),
-.content-body :deep(h3) {
-  margin-top: 36px;
-  margin-bottom: 16px;
-  scroll-margin-top: 100px;
-}
-
-.content-body :deep(h1) {
-  font-size: 1.75rem;
-}
-
-.content-body :deep(h2) {
-  font-size: 1.375rem;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.content-body :deep(h3) {
-  font-size: 1.125rem;
-}
-
-.content-body :deep(p) {
-  margin-bottom: 16px;
-}
-
-.content-body :deep(ul),
-.content-body :deep(ol) {
-  margin-bottom: 16px;
-  padding-left: 24px;
-}
-
-.content-body :deep(li) {
-  margin-bottom: 6px;
-}
-
-.content-body :deep(pre) {
-  background: var(--color-bg-light);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 0.875rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.content-body :deep(pre .code-header) {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 16px;
-  background: var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  border-radius: 8px 8px 0 0;
-  flex-shrink: 0;
-}
-
-.content-body :deep(pre .code-lang) {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
-.content-body :deep(pre .copy-btn) {
-  padding: 4px 12px;
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  color: var(--color-text-secondary);
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.content-body :deep(pre .copy-btn:hover) {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
-}
-
-.content-body :deep(pre .code-content) {
-  overflow-x: auto;
-}
-
-.content-body :deep(pre .code-content code) {
-  display: block !important;
-  padding: 16px !important;
-  padding-left: 24px !important;
-  background: none !important;
-  white-space: pre;
-}
-
-.content-body :deep(code) {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-}
-
-.content-body :deep(pre code) {
-  background: none;
-  padding: 0;
-}
-
-.content-body :deep(strong) {
-  color: var(--color-primary);
-} */
 .markdown-body {
   background-color: transparent;
 }
