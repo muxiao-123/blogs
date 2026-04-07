@@ -16,7 +16,7 @@ import { TableHeader } from '@tiptap/extension-table-header'
 import { watch, onBeforeUnmount } from 'vue'
 import { Markdown } from 'tiptap-markdown-3'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
-import { common, createLowlight } from 'lowlight'
+import lowlight from '@/utils/lowlight-tool'
 
 const props = defineProps<{
   modelValue: string
@@ -61,7 +61,8 @@ const editor = useEditor({
       alignments: ['left', 'center', 'right', 'justify']
     }),
     CodeBlockLowlight.configure({
-      lowlight: createLowlight(common)
+      // lowlight: createLowlight(common)
+      lowlight
     }),
     HorizontalRule,
     Table.configure({

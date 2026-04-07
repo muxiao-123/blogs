@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useArticleStore, type CreateArticleInput } from '@/stores/articles'
 import { useUserStore } from '@/stores/user'
@@ -7,8 +7,10 @@ import { categories } from '@/data/articles'
 import { api } from '@/api/index'
 import type { Category } from '@/types'
 import NavBar from '@/components/NavBar.vue'
-import TiptapEditor from '@/components/TiptapEditor.vue'
 import domPurify from 'dompurify'
+
+// 动态导入 TiptapEditor（减少首屏加载体积）
+const TiptapEditor = defineAsyncComponent(() => import('@/components/TiptapEditor.vue'))
 
 const router = useRouter()
 const route = useRoute()
