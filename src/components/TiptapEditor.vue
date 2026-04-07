@@ -15,6 +15,9 @@ import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
 import { watch, onBeforeUnmount } from 'vue'
 import { Markdown } from 'tiptap-markdown-3'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { common, createLowlight } from 'lowlight'
+
 const props = defineProps<{
   modelValue: string
   placeholder?: string
@@ -30,8 +33,11 @@ const editor = useEditor({
     StarterKit.configure({
       heading: {
         levels: [1, 2, 3]
-      }
-      // codeBlock: false
+      },
+      link: false,
+      codeBlock: false,
+      underline: false,
+      horizontalRule: false
     }),
     Placeholder.configure({
       placeholder: props.placeholder || '开始编写内容...'
@@ -54,6 +60,9 @@ const editor = useEditor({
       types: ['heading', 'paragraph'],
       alignments: ['left', 'center', 'right', 'justify']
     }),
+    CodeBlockLowlight.configure({
+      lowlight: createLowlight(common)
+    }),
     HorizontalRule,
     Table.configure({
       resizable: true,
@@ -64,7 +73,6 @@ const editor = useEditor({
     TableRow,
     TableCell,
     TableHeader,
-    // 使用支持高亮的 CodeBlockLowlight 替代
     Markdown.configure({
       html: true, // 关键：允许 HTML 输入/输出，解决混合格式需求
       linkify: false, // 自动识别 URL
@@ -74,6 +82,11 @@ const editor = useEditor({
       // 🎯 核心：自定义代码块的序列化逻辑
     })
   ],
+  editorProps: {
+    attributes: {
+      spellcheck: 'false'
+    }
+  },
   onUpdate: ({ editor }) => {
     emit('update:modelValue', editor.getHTML())
   }
@@ -138,16 +151,29 @@ const setTextAlign = (align: 'left' | 'center' | 'right' | 'justify') => {
   editor.value?.chain().focus().setTextAlign(align).run()
 }
 
+let tempTextColor: string | null
 // 颜色
 const setTextColor = () => {
+  if (tempTextColor) {
+    tempTextColor = ''
+    editor.value?.chain().focus().unsetColor().run()
+    return
+  }
   const color = window.prompt('请输入字体颜色 (如 #ff0000):')
+  tempTextColor = color
   if (color) {
     editor.value?.chain().focus().setColor(color).run()
   }
 }
-
+let tempColor: string | null
 const setHighlight = () => {
+  if (tempColor) {
+    tempColor = ''
+    editor.value?.chain().focus().unsetHighlight().run()
+    return
+  }
   const color = window.prompt('请输入高亮颜色 (如 #ffff00):')
+  tempColor = color
   if (color) {
     editor.value?.chain().focus().setHighlight({ color }).run()
   }

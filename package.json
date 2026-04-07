@@ -17,6 +17,7 @@
     "commit": "git add . && cz"
   },
   "dependencies": {
+    "@tiptap/extension-code-block-lowlight": "^3.22.2",
     "@tiptap/extension-color": "^3.22.0",
     "@tiptap/extension-highlight": "^3.22.0",
     "@tiptap/extension-horizontal-rule": "^3.22.0",
@@ -36,6 +37,7 @@
     "dompurify": "^3.3.3",
     "highlight.js": "^11.11.1",
     "highlightjs-vue": "^1.0.0",
+    "lowlight": "^3.3.0",
     "marked": "^17.0.5",
     "marked-highlight": "^2.2.3",
     "pinia": "^3.0.0",
