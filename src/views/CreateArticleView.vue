@@ -8,6 +8,7 @@ import { api } from '@/api/index'
 import type { Category } from '@/types'
 import NavBar from '@/components/NavBar.vue'
 import domPurify from 'dompurify'
+import { marked } from 'marked'
 
 // 动态导入 TiptapEditor（减少首屏加载体积）
 const TiptapEditor = defineAsyncComponent(() => import('@/components/TiptapEditor.vue'))
@@ -116,10 +117,12 @@ onMounted(async () => {
       await articleStore.init()
       const article = articleStore.getArticleById(editArticleId.value)
       if (article) {
+        // 将 Markdown 格式转换为 HTML 格式，以便编辑器正确显示
+        const htmlContent = marked.parse(article.content || '') as string
         formData.value = {
           title: article.title,
           excerpt: article.excerpt,
-          content: article.content,
+          content: domPurify.sanitize(htmlContent),
           cover: article.cover,
           category: article.category,
           tags: [...article.tags],
