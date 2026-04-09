@@ -34,9 +34,12 @@ export const useArticleStore = defineStore('articles', () => {
 
   // 分页相关
   const currentPage = ref(1)
-  const pageSize = 20
+  const pageSize = 12
+  const totalPages = computed(() => {
+    return Math.ceil(filteredArticles.value.length / pageSize)
+  })
   const hasMore = computed(() => {
-    return filteredArticles.value.length > currentPage.value * pageSize
+    return currentPage.value < totalPages.value
   })
 
   // 初始化加载数据
@@ -90,10 +93,17 @@ export const useArticleStore = defineStore('articles', () => {
 
   // 分页后的文章列表
   const paginatedArticles = computed(() => {
-    const start = 0
+    const start = (currentPage.value - 1) * pageSize
     const end = currentPage.value * pageSize
     return filteredArticles.value.slice(start, end)
   })
+
+  // 跳转到指定页面
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page
+    }
+  }
 
   // 加载更多
   const loadMore = () => {
@@ -295,6 +305,7 @@ export const useArticleStore = defineStore('articles', () => {
     filteredArticles,
     paginatedArticles,
     hasMore,
+    totalPages,
     currentPage,
     allTags,
     init,
@@ -305,6 +316,7 @@ export const useArticleStore = defineStore('articles', () => {
     toggleTag,
     clearFilters,
     loadMore,
+    goToPage,
     createArticle,
     updateArticle,
     deleteArticle,

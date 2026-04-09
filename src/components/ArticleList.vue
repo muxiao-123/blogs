@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { useArticleStore } from '@/stores/articles'
 import ArticleCard from './ArticleCard.vue'
 
@@ -9,31 +9,47 @@ const sectionTitle = computed(() => {
   return articleStore.sortBy === 'views' ? '热门文章' : '最新文章'
 })
 
-const displayedCount = computed(() => {
-  return articleStore.paginatedArticles.length
-})
-
 const totalCount = computed(() => {
   return articleStore.filteredArticles.length
 })
 
-// 记录首次加载状态
-const isInitialLoad = ref(true)
+// 生成分页页码数组
+const pageNumbers = computed(() => {
+  const total = articleStore.totalPages
+  const current = articleStore.currentPage
+  const pages: (number | string)[] = []
 
-watch(
-  () => articleStore.currentPage,
-  (newPage) => {
-    if (newPage === 1) {
-      isInitialLoad.value = true
+  if (total <= 7) {
+    // 总页数小于等于7，全部显示
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    // 总页数大于7，显示省略号版本
+    if (current <= 3) {
+      // 靠近开头
+      for (let i = 1; i <= 5; i++) pages.push(i)
+      pages.push('...')
+      pages.push(total)
+    } else if (current >= total - 2) {
+      // 靠近结尾
+      pages.push(1)
+      pages.push('...')
+      for (let i = total - 4; i <= total; i++) pages.push(i)
     } else {
-      isInitialLoad.value = false
+      // 中间位置
+      pages.push(1)
+      pages.push('...')
+      for (let i = current - 1; i <= current + 1; i++) pages.push(i)
+      pages.push('...')
+      pages.push(total)
     }
   }
-)
+
+  return pages
+})
 
 const getAnimationDelay = (index: number) => {
-  // 只有首次加载时才有动画延迟，加载更多时立即显示
-  if (!isInitialLoad.value) return '0s'
   return `${index * 0.05}s`
 }
 </script>
@@ -44,7 +60,7 @@ const getAnimationDelay = (index: number) => {
       <h2 class="section-title">
         <span class="title-accent">{{ sectionTitle }}</span>
       </h2>
-      <p class="article-count">共 {{ totalCount }} 篇，已加载 {{ displayedCount }} 篇</p>
+      <p class="article-count">共 {{ totalCount }} 篇</p>
     </div>
 
     <div class="articles-grid" v-if="articleStore.filteredArticles.length > 0">
@@ -56,8 +72,55 @@ const getAnimationDelay = (index: number) => {
       />
     </div>
 
-    <div class="load-more-wrapper" v-if="articleStore.hasMore">
-      <button class="load-more-btn" @click="articleStore.loadMore">加载更多</button>
+    <!-- 分页导航 -->
+    <div class="pagination-wrapper" v-if="articleStore.totalPages > 1">
+      <button
+        class="page-btn page-nav"
+        :disabled="articleStore.currentPage === 1"
+        @click="articleStore.goToPage(articleStore.currentPage - 1)"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <button
+        v-for="(page, index) in pageNumbers"
+        :key="index"
+        class="page-btn"
+        :class="{
+          active: page === articleStore.currentPage,
+          ellipsis: page === '...'
+        }"
+        :disabled="page === '...'"
+        @click="page !== '...' && articleStore.goToPage(page as number)"
+      >
+        {{ page }}
+      </button>
+
+      <button
+        class="page-btn page-nav"
+        :disabled="articleStore.currentPage === articleStore.totalPages"
+        @click="articleStore.goToPage(articleStore.currentPage + 1)"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
     </div>
 
     <div class="empty-state" v-if="articleStore.filteredArticles.length === 0">
@@ -135,28 +198,64 @@ const getAnimationDelay = (index: number) => {
   transform: scale(1.05);
 }
 
-.load-more-wrapper {
+.pagination-wrapper {
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 6px;
   margin-top: var(--space-xl);
+  flex-wrap: wrap;
 }
 
-.load-more-btn {
-  padding: var(--space-md) var(--space-2xl);
+.page-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
-  border-radius: 50px;
-  font-size: 1rem;
-  font-weight: 600;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: all var(--transition-fast);
 }
 
-.load-more-btn:hover {
+.page-btn:hover:not(:disabled):not(.active):not(.ellipsis) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.page-btn.active {
   background: var(--color-primary);
-  color: var(--color-bg-deep);
-  box-shadow: var(--glow-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-btn.ellipsis {
+  border: none;
+  cursor: default;
+}
+
+.page-btn.ellipsis:hover {
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.page-nav {
+  padding: 0 8px;
+}
+
+.page-nav svg {
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
@@ -167,6 +266,17 @@ const getAnimationDelay = (index: number) => {
   .list-header {
     flex-direction: column;
     gap: var(--space-sm);
+  }
+
+  .pagination-wrapper {
+    gap: 4px;
+  }
+
+  .page-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    font-size: 13px;
   }
 }
 </style>
