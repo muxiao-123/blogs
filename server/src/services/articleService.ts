@@ -134,7 +134,10 @@ class ArticleService {
     const article = await articleModel.findById(id)
     if (!article) return null
     const newViews = (article.views || 0) + 1
-    return articleModel.update(id, { views: newViews })
+    return articleModel.update(id, {
+      views: newViews,
+      lastViewedAt: new Date().toISOString()
+    })
   }
 
   // 删除文章

@@ -117,6 +117,26 @@ const categoryInfo = computed(() => {
   return categories.find((c) => c.key === article.value!.category) || categories[3]
 })
 
+// 格式化最后浏览时间
+const lastViewedText = computed(() => {
+  if (!article.value?.lastViewedAt) return ''
+  const viewedDate = new Date(article.value.lastViewedAt)
+  const now = new Date()
+  const diffMs = now.getTime() - viewedDate.getTime()
+  const diffSecs = Math.floor(diffMs / 1000)
+  const diffMins = Math.floor(diffSecs / 60)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffSecs < 60) return '刚刚'
+  if (diffMins < 60) return `${diffMins} 分钟前`
+  if (diffHours < 24) return `${diffHours} 小时前`
+  if (diffDays < 7) return `${diffDays} 天前`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} 周前`
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} 个月前`
+  return `${Math.floor(diffDays / 365)} 年前`
+})
+
 // 获取相关文章（优先匹配度高的，没有则随机）
 const relatedArticles = computed(() => {
   if (!article.value) return []
@@ -372,6 +392,20 @@ const handleLikeChange = (liked: boolean, likes: number) => {
                 <circle cx="12" cy="12" r="3" />
               </svg>
               {{ article.views }} 阅读
+            </span>
+            <span class="stat" v-if="lastViewedText">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              {{ lastViewedText }}
             </span>
           </div>
         </div>

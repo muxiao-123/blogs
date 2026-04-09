@@ -62,6 +62,26 @@ const formatDate = (dateStr: string | undefined) => {
   })
 }
 
+// 格式化最后浏览时间
+const lastViewedText = computed(() => {
+  if (!props.article.lastViewedAt) return ''
+  const viewedDate = new Date(props.article.lastViewedAt)
+  const now = new Date()
+  const diffMs = now.getTime() - viewedDate.getTime()
+  const diffSecs = Math.floor(diffMs / 1000)
+  const diffMins = Math.floor(diffSecs / 60)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffSecs < 60) return '刚刚'
+  if (diffMins < 60) return `${diffMins} 分钟前`
+  if (diffHours < 24) return `${diffHours} 小时前`
+  if (diffDays < 7) return `${diffDays} 天前`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} 周前`
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} 个月前`
+  return `${Math.floor(diffDays / 365)} 年前`
+})
+
 const openArticle = (e: Event) => {
   // 如果点击的是编辑按钮，不打开文章
   if ((e.target as HTMLElement).closest('.edit-btn')) return
@@ -157,6 +177,20 @@ const goToEdit = () => {
               <circle cx="12" cy="12" r="3" />
             </svg>
             {{ article.views }}
+          </span>
+          <span class="meta-item" v-if="lastViewedText" title="最后浏览">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            {{ lastViewedText }}
           </span>
         </div>
       </div>

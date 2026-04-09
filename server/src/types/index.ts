@@ -16,6 +16,7 @@ export interface Article {
   favorites: number
   comments: Comment[]
   isPrivate?: boolean
+  lastViewedAt?: string // 最后浏览时间
 }
 
 export interface Author {
