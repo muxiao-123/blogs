@@ -43,7 +43,7 @@ jobs:
           port: 22
           # 将构建产物传到服务器的指定目录
           source: "dist/*" # 如果你用 npm run build 生成的是 build/ 就改成 build/*
-          target: "/etc/nginx/muxiao/blogs"
+          target: "/var/muxiao/blogs"
           strip_components: 1 # 去除 dist/ 这一层目录
 
 
