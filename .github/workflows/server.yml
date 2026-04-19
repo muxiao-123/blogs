@@ -36,7 +36,6 @@ jobs:
       - name: Build
         run: cd server && pnpm run build
 
-      # 直接用 scp-action 传输 dist 目录内容（参考前端）
       - name: Deploy to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -44,6 +43,33 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: 22
-          source: "server/dist/*"
-          target: "/var/muxiao/blogs-server"
-          strip_components: 2  # 去掉 server/ 和 dist/ 两层目录
+          source: "server/dist/"
+          target: "/var/muxiao/blogs-server-new"
+          strip_components: 1
+
+      - name: Backup and replace
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: |
+            cd /var/muxiao
+            
+            # 保留最近5个备份，删除更早的
+            ls -t | grep "blogs-server.backup." | tail -n +6 | xargs -r rm -rf
+            
+            # 备份当前版本
+            if [ -d "blogs-server" ]; then
+              mv blogs-server "blogs-server.backup.$(date +%Y%m%d_%H%M%S)"
+            fi
+            
+            # 部署新版本
+            mv blogs-server-new/dist blogs-server
+            rm -rf blogs-server-new
+            
+            # 重启 PM2 服务（如果有）
+            # pm2 reload ecosystem.config.js --update-env
+            
+            echo "✅ Deployment completed at $(date)"
