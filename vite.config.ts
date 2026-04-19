@@ -96,8 +96,13 @@ export default defineConfig({
       overlay: true
     },
     proxy: {
+      // '/api': {
+      //   target: 'http://192.168.10.6:3001',
+      //   changeOrigin: true,
+      //   rewrite: (path) => path.replace(/^\/api/, '')
+      // },
       '/api': {
-        target: 'http://192.168.10.6:3001',
+        target: 'http://192.168.10.3:3001',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
