@@ -47,7 +47,7 @@ jobs:
           target: "/var/muxiao-server/blogs-new"
           strip_components: 2
 
-      - name: Backup and replace
+      - name: Backup and replace (保留 node_modules)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -57,21 +57,53 @@ jobs:
           script: |
             cd /var/muxiao-server
             
-            # 保留最近5个备份，删除更早的
-            ls -t | grep "blogs.backup." | tail -n +6 | xargs -r rm -rf
+            # 保留最近5个备份
+            ls -t 2>/dev/null | grep "^blogs.backup\." | tail -n +6 | xargs -r rm -rf
             
-            # 备份当前版本
+            # 备份当前版本（但不带走 node_modules）
             if [ -d "blogs" ]; then
-              mv blogs "blogs.backup.$(date +%Y%m%d_%H%M%S)"
+              BACKUP_NAME="blogs.backup.$(date +%Y%m%d_%H%M%S)"
+              
+              # 先复制 node_modules 到新目录（保留依赖）
+              if [ -d "blogs/node_modules" ] && [ ! -d "blogs-new/node_modules" ]; then
+                echo "🔄 Preserving node_modules..."
+                cp -r blogs/node_modules blogs-new/
+              fi
+              
+              # 备份旧版本（不含 node_modules，节省空间）
+              mv blogs "$BACKUP_NAME"
+              echo "✅ Backed up: $BACKUP_NAME"
             fi
             
             # 部署新版本
-            mv blogs-new blogs
-            rm -rf blogs-new
+            if [ -d "blogs-new" ]; then
+              mv blogs-new blogs
+              echo "✅ Deployed new version"
+            else
+              echo "❌ Error: blogs-new directory not found!"
+              exit 1
+            fi
             
-            # 重启 PM2 服务（如果有）
-            # pm2 reload ecosystem.config.js --update-env
+            # 确保 node_modules 存在
+            cd blogs
+            if [ ! -d "node_modules" ]; then
+              echo "📦 Installing dependencies..."
+              pnpm install --prod
+            else
+              echo "✅ node_modules preserved, skipping install"
+            fi
+            
+            # 重启服务
             sudo systemctl restart lumina-blog
             sleep 2
-            systemctl status lumina-blog --no-pager
+            
+            # 检查服务状态
+            if systemctl is-active --quiet lumina-blog; then
+              echo "✅ Service lumina-blog is running"
+            else
+              echo "❌ Service lumina-blog failed to start"
+              systemctl status lumina-blog --no-pager
+              exit 1
+            fi
+            
             echo "✅ Deployment completed at $(date)"
