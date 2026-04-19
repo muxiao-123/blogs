@@ -4,10 +4,10 @@ name: 部署到云服务器
 on:
   push:
     branches: ["publish"]
-  paths-ignore:
-    - 'server/**'
-    - '.github/workflows/server.yml'
-    - '.github/workflows/deploy.yml'
+    paths-ignore:
+      - 'server/**'
+      - '.github/workflows/server.yml'
+      - '.github/workflows/deploy.yml'
 
 # 定义所有任务
 jobs:
