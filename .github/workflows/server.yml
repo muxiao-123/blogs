@@ -6,7 +6,6 @@ on:
       - server
     paths:
       - 'server/**'
-      - '.github/workflows/server.yml'
   workflow_dispatch:
 
 jobs:
@@ -34,54 +33,16 @@ jobs:
         run: cd server && pnpm install
 
       - name: Build
-        run: |
-          cd server
-          pnpm run build
-          if [ ! -d "dist" ]; then
-            echo "Error: Build failed - dist folder not found"
-            exit 1
-          fi
-          cd ..
+        run: cd server && pnpm run build
 
-      - name: Package dist
-        run: |
-          cd server
-          tar -czvf ../dist.tar.gz dist
-          cd ..
-          echo "Package size: $(du -h dist.tar.gz | cut -f1)"
-
-      - name: Upload to server
+      # 直接用 scp-action 传输 dist 目录内容（参考前端）
+      - name: Deploy to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "dist.tar.gz"
-          target: "/var/test-muxiao"
-
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            cd /var/test-muxiao
-            echo "Current directory: $(pwd)"
-            echo "Files before deployment:"
-            ls -la
-            echo "Extracting dist.tar.gz..."
-            tar -xzvf dist.tar.gz
-            if [ $? -eq 0 ]; then
-              echo "✅ Extraction successful"
-              rm dist.tar.gz
-              echo "✅ Deployment completed at $(date)"
-              echo "Files after deployment:"
-              ls -la
-            else
-              echo "❌ Extraction failed"
-              exit 1
-            fi
-
-      - name: Cleanup
-        run: rm -f dist.tar.gz
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSK_KEY }}
+          port: 22
+          source: "server/dist/*"
+          target: "/var/muxiao/blogs-server"
+          strip_components: 2  # 去掉 server/ 和 dist/ 两层目录
