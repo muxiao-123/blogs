@@ -21,12 +21,14 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 // 中间件
-app.use(cors({
-  origin: true,
-  credentials: true,
-  exposedHeaders: ['Authorization'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}))
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+    exposedHeaders: ['Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+)
 app.use(express.json())
 
 // 静态文件服务（上传的图片）
@@ -97,6 +99,7 @@ async function startServer() {
 ╚═══════════════════════════════════════════════════╝
       `)
     })
+    console.log('测试服务器端自动部署')
   } catch (error) {
     console.error('Failed to start server:', error)
     process.exit(1)
