@@ -3,7 +3,7 @@ name: Deploy Server
 on:
   push:
     branches:
-      - server-publish
+      - server
     paths:
       - 'server/**'
   workflow_dispatch:
@@ -41,8 +41,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           source: "server/dist.tar.gz"
-          target: "/data/blogs-server"
-          strip_components: 0
+          target: "/var/muxiao-server"
+          strip_components: 1
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
@@ -51,7 +51,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /data/blogs-server
+            cd /var/muxiao-server
             tar -xzvf dist.tar.gz
             rm dist.tar.gz
-            pm2 restart blog-server || pm2 start dist/index.js --name "blog-server"
