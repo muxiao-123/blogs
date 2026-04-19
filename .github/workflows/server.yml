@@ -6,6 +6,7 @@ on:
       - server
     paths:
       - 'server/**'
+      - '.github/workflows/server.yml'
   workflow_dispatch:
 
 jobs:
@@ -15,24 +16,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10.28.1"
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
           cache-dependency-path: 'server/pnpm-lock.yaml'
-
-      - name: Install pnpm
-        run: npm install -g pnpm
 
       - name: Install dependencies
         run: cd server && pnpm install
 
       - name: Build
-        run: cd server && pnpm run build
+        run: |
+          cd server
+          pnpm run build
+          if [ ! -d "dist" ]; then
+            echo "Error: Build failed - dist folder not found"
+            exit 1
+          fi
+          cd ..
 
       - name: Package dist
-        run: cd server && tar -czvf dist.tar.gz dist
+        run: |
+          cd server
+          tar -czvf ../dist.tar.gz dist
+          cd ..
+          echo "Package size: $(du -h dist.tar.gz | cut -f1)"
 
       - name: Upload to server
         uses: appleboy/scp-action@v0.1.7
@@ -40,9 +54,8 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "server/dist.tar.gz"
-          target: "/var/muxiao-server"
-          strip_components: 1
+          source: "dist.tar.gz"
+          target: "/var/test-muxiao"
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
@@ -51,6 +64,22 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /var/muxiao-server
+            cd /var/test-muxiao
+            echo "Current directory: $(pwd)"
+            echo "Files before deployment:"
+            ls -la
+            echo "Extracting dist.tar.gz..."
             tar -xzvf dist.tar.gz
-            rm dist.tar.gz
+            if [ $? -eq 0 ]; then
+              echo "✅ Extraction successful"
+              rm dist.tar.gz
+              echo "✅ Deployment completed at $(date)"
+              echo "Files after deployment:"
+              ls -la
+            else
+              echo "❌ Extraction failed"
+              exit 1
+            fi
+
+      - name: Cleanup
+        run: rm -f dist.tar.gz
