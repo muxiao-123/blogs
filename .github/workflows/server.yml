@@ -45,7 +45,7 @@ jobs:
           port: 22
           source: "server/dist/"
           target: "/var/muxiao-server/blogs-new"
-          strip_components: 1
+          strip_components: 2
 
       - name: Backup and replace
         uses: appleboy/ssh-action@v1.0.3
