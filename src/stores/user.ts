@@ -31,7 +31,8 @@ export const useUserStore = defineStore('user', () => {
 
       if (response.ok) {
         user.value = await response.json()
-      } else {
+      } else if (response.status === 401) {
+        // Token 过期或无效，清除 token 强制重新登录
         logout()
       }
     } catch (e) {

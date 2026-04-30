@@ -91,6 +91,8 @@ const openArticle = (e: Event) => {
     params: { id: props.article.id }
   }).href
   window.open(routeUrl, '_blank')
+  // window.open(routeUrl, 'target')
+  // router.push({ name: 'Article', params: { id: props.article.id }})
 }
 
 const goToEdit = () => {

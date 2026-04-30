@@ -54,7 +54,8 @@ export interface CreateArticleInput {
 }
 
 // 使用环境变量，支持开发/生产环境切换
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api'
+// 开发环境使用相对路径，通过 Vite 代理
+const API_BASE = import.meta.env.VITE_API_BASE || '/api'
 
 // 用户类型
 export interface User {
@@ -354,7 +355,7 @@ class ApiService {
     receiverUsername: string,
     content: string
   ): Promise<Message> {
-    return this.request<Message>(`${API_BASE}/messages/send`, {
+    return this.request<Message>(`${API_BASE}/messages/`, {
       method: 'POST',
       body: JSON.stringify({ receiverId, receiverUsername, content })
     })
@@ -366,14 +367,12 @@ class ApiService {
     if (limit) params.set('limit', String(limit))
     if (skip) params.set('skip', String(skip))
     const query = params.toString()
-    return this.request<Message[]>(
-      `${API_BASE}/messages/conversation/${userId}${query ? `?${query}` : ''}`
-    )
+    return this.request<Message[]>(`${API_BASE}/messages/${userId}${query ? `?${query}` : ''}`)
   }
 
   // 获取所有对话列表
   async getConversations(): Promise<Conversation[]> {
-    return this.request<Conversation[]>(`${API_BASE}/messages/conversations`)
+    return this.request<Conversation[]>(`${API_BASE}/messages/`)
   }
 
   // 获取未读消息数
@@ -384,30 +383,25 @@ class ApiService {
   // 标记消息为已读
   async markAsRead(userId: string): Promise<{ count: number }> {
     return this.request<{ count: number }>(`${API_BASE}/messages/read/${userId}`, {
-      method: 'PUT'
+      method: 'POST'
     })
   }
 
   // 标记所有消息为已读
   async markAllAsRead(): Promise<{ count: number }> {
     return this.request<{ count: number }>(`${API_BASE}/messages/read-all`, {
-      method: 'PUT'
+      method: 'POST'
     })
   }
 
   // 获取评论通知列表
   async getComments(): Promise<{ comments: unknown[]; unreadCount: number }> {
-    return this.request<{ comments: unknown[]; unreadCount: number }>(
-      `${API_BASE}/comments/notifications`
-    )
+    return this.request<{ comments: unknown[]; unreadCount: number }>(`${API_BASE}/notifications`)
   }
 
-  // 标记评论为已读
+  // 标记评论为已读 (后端没有实现，暂时跳过)
   async markCommentAsRead(commentId: string, articleId: string): Promise<void> {
-    return this.request<void>(`${API_BASE}/comments/${commentId}/read`, {
-      method: 'PUT',
-      body: JSON.stringify({ articleId })
-    })
+    return Promise.resolve()
   }
 }
 

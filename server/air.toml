@@ -1,0 +1,34 @@
+# 基础配置
+root = "."
+tmp_dir = "tmp"
+
+# 构建命令
+[build]
+  bin = "./tmp/server"
+  cmd = "go build -o ./tmp/server ."
+  delay = 1000          # 延迟检测（ms）
+  exclude_dir = ["assets", "tmp", "vendor"]
+  exclude_regex = ["_test.go"]
+  exclude_unchanged = false
+  follow_symlink = false
+  include_ext = ["go", "tpl", "tmpl", "html"]
+  kill_delay = "2s"
+  log = "build-errors.log"
+  rerun = false
+  send_interrupt = false
+  stop_on_error = true
+
+# 日志
+[log]
+  time = false
+
+# 颜色
+[color]
+  build = "yellow"
+  main = "magenta"
+  runner = "green"
+  watcher = "cyan"
+
+# 通知（可选）
+[misc]
+  clean_on_exit = true

@@ -330,9 +330,11 @@ const formatTime = (dateStr: string) => {
 
 const loadConversations = async () => {
   try {
-    conversations.value = await api.getConversations()
+    const result = await api.getConversations()
+    conversations.value = result || []
   } catch (e) {
     console.error('加载对话列表失败:', e)
+    conversations.value = []
   }
 }
 

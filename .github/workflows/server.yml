@@ -1,109 +1,68 @@
-name: Deploy Server
+name: Deploy Server (Go)
 
 on:
   push:
     branches:
-      - server
+      - server-publish
     paths:
       - 'server/**'
-      - '.github/workflows/server.yml'
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          version: "10.28.1"
+          go-version: '1.21'
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-          cache-dependency-path: 'server/pnpm-lock.yaml'
-
-      - name: Install dependencies
-        run: cd server && pnpm install
+      - name: Download dependencies
+        run: |
+          cd server
+          go mod download
 
       - name: Build
-        run: cd server && pnpm run build
+        run: |
+          cd server
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o server main.go
 
-      - name: Deploy to server
+      - name: Create upload directory
+        run: |
+          cd server
+          mkdir -p public/uploads
+
+      - name: Package
+        run: |
+          cd server
+          tar -czvf server.tar.gz server public
+
+      - name: Upload to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
+          username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
-          source: "server/dist/"
-          target: "/var/muxiao-server/blogs-new"
-          strip_components: 2
+          source: "server/server.tar.gz"
+          target: "/data/blogs-server"
+          strip_components: 0
 
-      - name: Backup and replace (保留 node_modules)
+      - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
+          username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          port: 22
           script: |
-            cd /var/muxiao-server
-            
-            # 保留最近5个备份
-            ls -t 2>/dev/null | grep "^blogs.backup\." | tail -n +6 | xargs -r rm -rf
-            
-            # 备份当前版本（但不带走 node_modules）
-            if [ -d "blogs" ]; then
-              BACKUP_NAME="blogs.backup.$(date +%Y%m%d_%H%M%S)"
-              
-              # 先复制 node_modules 到新目录（保留依赖）
-              if [ -d "blogs/node_modules" ] && [ ! -d "blogs-new/node_modules" ]; then
-                echo "🔄 Preserving node_modules..."
-                cp -r blogs/node_modules blogs-new/
-              fi
-              
-              # 备份旧版本（不含 node_modules，节省空间）
-              mv blogs "$BACKUP_NAME"
-              echo "✅ Backed up: $BACKUP_NAME"
-            fi
-            
-            # 部署新版本
-            if [ -d "blogs-new" ]; then
-              mv blogs-new blogs
-              echo "✅ Deployed new version"
-            else
-              echo "❌ Error: blogs-new directory not found!"
-              exit 1
-            fi
-            
-            # 确保 node_modules 存在
-            cd blogs
-            if [ ! -d "node_modules" ]; then
-              echo "📦 Installing dependencies..."
-              pnpm install --prod
-            else
-              echo "✅ node_modules preserved, skipping install"
-            fi
-            
-            # 重启服务
-            sudo systemctl restart lumina-blog
-            sleep 2
-            
-            # 检查服务状态
-            if systemctl is-active --quiet lumina-blog; then
-              echo "✅ Service lumina-blog is running"
-            else
-              echo "❌ Service lumina-blog failed to start"
-              systemctl status lumina-blog --no-pager
-              exit 1
-            fi
-            
-            echo "✅ Deployment completed at $(date)"
+            cd /data/blogs-server
+            tar -xzvf server.tar.gz
+            rm server.tar.gz
+            # 确保上传目录存在
+            mkdir -p public/uploads
+            # 停止旧进程
+            pm2 stop blog-server 2>/dev/null || true
+            # 启动新服务
+            pm2 start server --name "blog-server" || pm2 restart blog-server
