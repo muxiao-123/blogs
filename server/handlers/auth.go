@@ -1,11 +1,10 @@
 package handlers
 
 import (
-	"net/http"
-	"strconv"
-
 	"blog-server/models"
+	"blog-server/response"
 	"blog-server/services"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +13,7 @@ import (
 func SearchUsers(c *gin.Context) {
 	q := c.Query("q")
 	if q == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "请提供搜索关键词"})
+		response.BadRequest(c, "请提供搜索关键词")
 		return
 	}
 
@@ -23,11 +22,11 @@ func SearchUsers(c *gin.Context) {
 
 	users, err := services.SearchUsers(q, limit)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "搜索失败"})
+		response.BadRequest(c, "搜索失败")
 		return
 	}
 
-	c.JSON(http.StatusOK, users)
+	response.Success(c, users)
 }
 
 // GetUserByID 根据ID获取用户信息
@@ -36,33 +35,33 @@ func GetUserByID(c *gin.Context) {
 
 	user, err := services.GetUserByID(id)
 	if err != nil || user == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "用户不存在"})
+		response.NotFound(c, "用户不存在")
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	response.Success(c, user)
 }
 
 // Register 注册
 func Register(c *gin.Context) {
 	var input models.CreateUserInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少必要字段"})
+		response.BadRequest(c, "缺少必要字段")
 		return
 	}
 
 	if len(input.Password) < 6 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "密码长度至少6位"})
+		response.BadRequest(c, "密码长度至少6位")
 		return
 	}
 
 	user, token, err := services.Register(input.Username, input.Email, input.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.BadRequest(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
+	response.Created(c, gin.H{
 		"user":  user,
 		"token": token,
 	})
@@ -72,17 +71,17 @@ func Register(c *gin.Context) {
 func Login(c *gin.Context) {
 	var input models.LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少必要字段"})
+		response.BadRequest(c, "缺少必要字段")
 		return
 	}
 
 	user, token, err := services.Login(input.Username, input.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		response.Unauthorized(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	response.Success(c, gin.H{
 		"user":  user,
 		"token": token,
 	})
@@ -92,7 +91,7 @@ func Login(c *gin.Context) {
 func GetMe(c *gin.Context) {
 	token := c.GetHeader("Authorization")
 	if token == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "未登录"})
+		response.Unauthorized(c, "未登录")
 		return
 	}
 
@@ -103,18 +102,18 @@ func GetMe(c *gin.Context) {
 
 	user, err := services.VerifyToken(token)
 	if err != nil || user == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Token无效"})
+		response.Unauthorized(c, "Token无效")
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	response.Success(c, user)
 }
 
 // UpdateProfile 更新用户信息
 func UpdateProfile(c *gin.Context) {
 	token := c.GetHeader("Authorization")
 	if token == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "未登录"})
+		response.Unauthorized(c, "未登录")
 		return
 	}
 
@@ -124,26 +123,26 @@ func UpdateProfile(c *gin.Context) {
 
 	currentUser, err := services.VerifyToken(token)
 	if err != nil || currentUser == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Token无效"})
+		response.Unauthorized(c, "Token无效")
 		return
 	}
 
 	var input models.UpdateUserInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "更新失败"})
+		response.BadRequest(c, "更新失败")
 		return
 	}
 
 	updatedUser, err := services.UpdateUser(currentUser.ID, input)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		response.BadRequest(c, err.Error())
 		return
 	}
 
 	if updatedUser == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "用户不存在"})
+		response.NotFound(c, "用户不存在")
 		return
 	}
 
-	c.JSON(http.StatusOK, updatedUser)
+	response.Success(c, updatedUser)
 }

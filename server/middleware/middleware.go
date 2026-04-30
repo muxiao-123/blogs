@@ -1,10 +1,9 @@
 package middleware
 
 import (
-	"net/http"
-	"strings"
-
+	"blog-server/response"
 	"blog-server/services"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +13,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "未登录"})
+			response.Unauthorized(c, "未登录")
 			c.Abort()
 			return
 		}
@@ -22,14 +21,14 @@ func AuthMiddleware() gin.HandlerFunc {
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 		token = strings.TrimSpace(token)
 		if token == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token无效"})
+			response.Unauthorized(c, "Token无效")
 			c.Abort()
 			return
 		}
 
 		user, err := services.VerifyToken(token)
 		if err != nil || user == nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Token无效"})
+			response.Unauthorized(c, "Token无效")
 			c.Abort()
 			return
 		}

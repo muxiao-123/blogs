@@ -533,7 +533,10 @@ const fetchFavoriteArticles = async () => {
       }
     })
     if (response.ok) {
-      favoriteArticles.value = await response.json()
+      const result = await response.json()
+      // 解析 RESTful 响应格式
+      const data = result?.data ?? result
+      favoriteArticles.value = Array.isArray(data) ? data : []
     }
   } catch (e) {
     console.error('Failed to fetch favorites:', e)
@@ -591,13 +594,17 @@ const fetchUserArticles = async () => {
     console.log('Fetching articles for author:', authorName)
 
     const response = await fetch(`${API_BASE}/articles?author=${authorName}`)
-    const data = await response.json()
-    console.log('Articles response:', data)
-    userArticles.value = data
+    const result = await response.json()
+    console.log('Articles response:', result)
+
+    // 解析 RESTful 响应格式
+    const data = result?.data ?? result
+    userArticles.value = Array.isArray(data) ? data : []
 
     // 获取统计数据
     const statsResponse = await fetch(`${API_BASE}/articles/user/stats?author=${authorName}`)
-    stats.value = await statsResponse.json()
+    const statsResult = await statsResponse.json()
+    stats.value = statsResult?.data ?? statsResult
   } catch (e) {
     console.error('Failed to fetch articles:', e)
   } finally {

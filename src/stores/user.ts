@@ -11,6 +11,17 @@ interface User {
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api'
 
+// 解析 RESTful 响应格式
+function parseResponse<T>(result: any): T {
+  if (result && typeof result === 'object' && 'success' in result) {
+    if (!result.success) {
+      throw new Error(result.error || result.message || '请求失败')
+    }
+    return result.data as T
+  }
+  return result as T
+}
+
 export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null)
   const token = ref<string | null>(localStorage.getItem('token'))
@@ -30,7 +41,8 @@ export const useUserStore = defineStore('user', () => {
       })
 
       if (response.ok) {
-        user.value = await response.json()
+        const result = await response.json()
+        user.value = parseResponse<User>(result)
       } else if (response.status === 401) {
         // Token 过期或无效，清除 token 强制重新登录
         logout()
@@ -53,11 +65,8 @@ export const useUserStore = defineStore('user', () => {
         body: JSON.stringify({ username, email, password })
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || '注册失败')
-      }
+      const result = await response.json()
+      const data = parseResponse<{ user: User; token: string }>(result)
 
       token.value = data.token
       user.value = data.user
@@ -79,11 +88,8 @@ export const useUserStore = defineStore('user', () => {
         body: JSON.stringify({ username, password })
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || '登录失败')
-      }
+      const result = await response.json()
+      const data = parseResponse<{ user: User; token: string }>(result)
 
       token.value = data.token
       user.value = data.user
@@ -128,13 +134,10 @@ export const useUserStore = defineStore('user', () => {
       })
 
       const result = await response.json()
+      const parsed = parseResponse<User>(result)
 
-      if (!response.ok) {
-        throw new Error(result.error || '更新失败')
-      }
-
-      user.value = result
-      return result
+      user.value = parsed
+      return parsed
     } finally {
       loading.value = false
     }

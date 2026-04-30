@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"net/http"
-
 	"blog-server/models"
+	"blog-server/response"
 	"blog-server/services"
 
 	"github.com/gin-gonic/gin"
@@ -18,17 +17,17 @@ var Categories = []models.CategoryInfo{
 
 // GetCategories 获取所有分类
 func GetCategories(c *gin.Context) {
-	c.JSON(http.StatusOK, Categories)
+	response.Success(c, Categories)
 }
 
 // GetTags 获取所有标签
 func GetTags(c *gin.Context) {
 	tags, err := services.GetAllTags()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取标签失败"})
+		response.ServerError(c, "获取标签失败")
 		return
 	}
-	c.JSON(http.StatusOK, tags)
+	response.Success(c, tags)
 }
 
 // GetArticles 获取所有文章
@@ -54,7 +53,7 @@ func GetArticles(c *gin.Context) {
 	}
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取文章失败"})
+		response.ServerError(c, "获取文章失败")
 		return
 	}
 
@@ -85,7 +84,7 @@ func GetArticles(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, filteredArticles)
+	response.Success(c, filteredArticles)
 }
 
 // GetArticle 获取单个文章
@@ -94,7 +93,7 @@ func GetArticle(c *gin.Context) {
 
 	article, err := services.GetArticleByID(id)
 	if err != nil || article == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "文章不存在"})
+		response.NotFound(c, "文章不存在")
 		return
 	}
 
@@ -102,7 +101,7 @@ func GetArticle(c *gin.Context) {
 	currentUser := getCurrentUser(c)
 	if article.IsPrivate {
 		if currentUser == nil || currentUser.Username != "lumina" {
-			c.JSON(http.StatusNotFound, gin.H{"error": "文章不存在"})
+			response.NotFound(c, "文章不存在")
 			return
 		}
 	}
@@ -122,14 +121,14 @@ func GetArticle(c *gin.Context) {
 		article.IsFavorited = contains(userFavorites, article.ID)
 	}
 
-	c.JSON(http.StatusOK, article)
+	response.Success(c, article)
 }
 
 // CreateArticle 创建文章
 func CreateArticle(c *gin.Context) {
 	var input models.CreateArticleInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少必要字段"})
+		response.BadRequest(c, "缺少必要字段")
 		return
 	}
 
@@ -142,11 +141,11 @@ func CreateArticle(c *gin.Context) {
 
 	article, err := services.CreateArticle(input, currentUser)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.ServerError(c, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, article)
+	response.Created(c, article)
 }
 
 // UpdateArticle 更新文章
@@ -155,7 +154,7 @@ func UpdateArticle(c *gin.Context) {
 
 	var input models.CreateArticleInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少必要字段"})
+		response.BadRequest(c, "缺少必要字段")
 		return
 	}
 
@@ -168,16 +167,16 @@ func UpdateArticle(c *gin.Context) {
 
 	article, err := services.UpdateArticle(id, input, currentUser)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.ServerError(c, err.Error())
 		return
 	}
 
 	if article == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "文章不存在或没有权限"})
+		response.NotFound(c, "文章不存在或没有权限")
 		return
 	}
 
-	c.JSON(http.StatusOK, article)
+	response.Success(c, article)
 }
 
 // DeleteArticle 删除文章
@@ -187,16 +186,16 @@ func DeleteArticle(c *gin.Context) {
 
 	success, err := services.DeleteArticle(id, currentUser)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.ServerError(c, err.Error())
 		return
 	}
 
 	if !success {
-		c.JSON(http.StatusNotFound, gin.H{"error": "文章不存在或没有权限"})
+		response.NotFound(c, "文章不存在或没有权限")
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	response.NoContent(c)
 }
 
 // LikeArticle 点赞/取消点赞文章
@@ -205,13 +204,13 @@ func LikeArticle(c *gin.Context) {
 	currentUser := getCurrentUser(c)
 
 	if currentUser == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "未登录"})
+		response.Unauthorized(c, "未登录")
 		return
 	}
 
 	article, err := services.GetArticleByID(id)
 	if err != nil || article == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "文章不存在"})
+		response.NotFound(c, "文章不存在")
 		return
 	}
 
@@ -232,7 +231,7 @@ func LikeArticle(c *gin.Context) {
 
 	services.UpdateLikes(id, newLikes)
 
-	c.JSON(http.StatusOK, gin.H{
+	response.Success(c, gin.H{
 		"likes":   newLikes,
 		"isLiked": !isLiked,
 	})
@@ -244,13 +243,13 @@ func FavoriteArticle(c *gin.Context) {
 	currentUser := getCurrentUser(c)
 
 	if currentUser == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "未登录"})
+		response.Unauthorized(c, "未登录")
 		return
 	}
 
 	article, err := services.GetArticleByID(id)
 	if err != nil || article == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "文章不存在"})
+		response.NotFound(c, "文章不存在")
 		return
 	}
 
@@ -271,7 +270,7 @@ func FavoriteArticle(c *gin.Context) {
 
 	services.UpdateFavorites(id, newFavorites)
 
-	c.JSON(http.StatusOK, gin.H{
+	response.Success(c, gin.H{
 		"favorited": !isFavorited,
 		"favorites": newFavorites,
 	})
@@ -283,12 +282,12 @@ func CheckFavorite(c *gin.Context) {
 	currentUser := getCurrentUser(c)
 
 	if currentUser == nil {
-		c.JSON(http.StatusOK, gin.H{"favorited": false})
+		response.Success(c, gin.H{"favorited": false})
 		return
 	}
 
 	userFavorites, _ := services.GetFavorites(currentUser.ID)
-	c.JSON(http.StatusOK, gin.H{"favorited": contains(userFavorites, id)})
+	response.Success(c, gin.H{"favorited": contains(userFavorites, id)})
 }
 
 // GetFavorites 获取用户收藏的文章
@@ -296,7 +295,7 @@ func GetFavorites(c *gin.Context) {
 	currentUser := getCurrentUser(c)
 
 	if currentUser == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "未登录"})
+		response.Unauthorized(c, "未登录")
 		return
 	}
 
@@ -313,43 +312,43 @@ func GetFavorites(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, articles)
+	response.Success(c, articles)
 }
 
 // GetArticleStats 获取文章统计
 func GetArticleStats(c *gin.Context) {
 	stats, err := services.GetArticleStats()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取统计失败"})
+		response.ServerError(c, "获取统计失败")
 		return
 	}
-	c.JSON(http.StatusOK, stats)
+	response.Success(c, stats)
 }
 
 // GetUserStats 获取用户统计
 func GetUserStats(c *gin.Context) {
 	author := c.Query("author")
 	if author == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少作者参数"})
+		response.BadRequest(c, "缺少作者参数")
 		return
 	}
 
 	stats, err := services.GetUserStats(author)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取统计失败"})
+		response.ServerError(c, "获取统计失败")
 		return
 	}
-	c.JSON(http.StatusOK, stats)
+	response.Success(c, stats)
 }
 
 // GetCurrentUser 获取当前用户信息
 func GetCurrentUserHandler(c *gin.Context) {
 	currentUser := getCurrentUser(c)
 	if currentUser == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "未登录"})
+		response.Unauthorized(c, "未登录")
 		return
 	}
-	c.JSON(http.StatusOK, currentUser)
+	response.Success(c, currentUser)
 }
 
 // Helper functions

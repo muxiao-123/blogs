@@ -25,7 +25,10 @@ onMounted(async () => {
       }
     })
     if (response.ok) {
-      favoriteArticles.value = await response.json()
+      const result = await response.json()
+      // 解析 RESTful 响应格式
+      const data = result?.data ?? result
+      favoriteArticles.value = Array.isArray(data) ? data : []
     }
   } catch (e) {
     console.error('Failed to fetch favorites:', e)

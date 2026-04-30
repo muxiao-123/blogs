@@ -4,12 +4,12 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
 
 	"blog-server/config"
+	"blog-server/response"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -66,13 +66,13 @@ func calculateMD5(filePath string) (string, error) {
 func UploadImage(c *gin.Context) {
 	file, err := c.FormFile("image")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "请选择要上传的图片"})
+		response.BadRequest(c, "请选择要上传的图片")
 		return
 	}
 
 	// 检查文件大小 (5MB)
 	if file.Size > 5*1024*1024 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "图片大小不能超过 5MB"})
+		response.BadRequest(c, "图片大小不能超过 5MB")
 		return
 	}
 
@@ -86,7 +86,7 @@ func UploadImage(c *gin.Context) {
 		".webp": true,
 	}
 	if !allowedExts[ext] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "不支持的图片格式，仅支持 JPEG, PNG, GIF, WebP"})
+		response.BadRequest(c, "不支持的图片格式，仅支持 JPEG, PNG, GIF, WebP")
 		return
 	}
 
@@ -96,14 +96,14 @@ func UploadImage(c *gin.Context) {
 
 	// 保存文件
 	if err := c.SaveUploadedFile(file, filePath); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "上传图片失败"})
+		response.ServerError(c, "上传图片失败")
 		return
 	}
 
 	// 计算文件哈希
 	hash, err := calculateMD5(filePath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "上传图片失败"})
+		response.ServerError(c, "上传图片失败")
 		return
 	}
 
@@ -116,8 +116,7 @@ func UploadImage(c *gin.Context) {
 		fmt.Printf("[Upload] 相同图片已存在: %s\n", existingFilename)
 
 		fileHashMutex.Unlock()
-		c.JSON(http.StatusOK, gin.H{
-			"success":  true,
+		response.Success(c, gin.H{
 			"url":      imageUrl,
 			"filename": existingFilename,
 			"existing": true,
@@ -130,8 +129,7 @@ func UploadImage(c *gin.Context) {
 	fileHashMutex.Unlock()
 
 	imageUrl := "/uploads/" + filename
-	c.JSON(http.StatusOK, gin.H{
-		"success":  true,
+	response.Success(c, gin.H{
 		"url":      imageUrl,
 		"filename": filename,
 		"existing": false,

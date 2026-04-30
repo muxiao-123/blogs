@@ -568,9 +568,8 @@ const handleLikeChange = (liked: boolean, likes: number) => {
     <!-- 评论区域 -->
     <section class="comments-section">
       <CommentSection
-        v-if="article.comments"
         :article-id="article.id"
-        :comments="article.comments"
+        :comments="article.comments || []"
         @comment-added="handleCommentAdded"
       />
     </section>

@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"net/http"
-
 	"blog-server/models"
+	"blog-server/response"
 	"blog-server/services"
 
 	"github.com/gin-gonic/gin"
@@ -14,17 +13,17 @@ func AddComment(c *gin.Context) {
 	articleID := c.Param("id")
 
 	var input struct {
-		Content string             `json:"content" binding:"required"`
+		Content string               `json:"content" binding:"required"`
 		Author  models.CommentAuthor `json:"author" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少必要字段"})
+		response.BadRequest(c, "缺少必要字段")
 		return
 	}
 
 	if input.Author.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少必要字段"})
+		response.BadRequest(c, "缺少必要字段")
 		return
 	}
 
@@ -34,16 +33,16 @@ func AddComment(c *gin.Context) {
 	})
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		response.ServerError(c, err.Error())
 		return
 	}
 
 	if comment == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "文章不存在"})
+		response.NotFound(c, "文章不存在")
 		return
 	}
 
-	c.JSON(http.StatusCreated, comment)
+	response.Created(c, comment)
 }
 
 // DeleteComment 删除评论
@@ -53,16 +52,16 @@ func DeleteComment(c *gin.Context) {
 
 	success, err := services.DeleteComment(articleID, commentID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "删除失败"})
+		response.ServerError(c, "删除失败")
 		return
 	}
 
 	if !success {
-		c.JSON(http.StatusNotFound, gin.H{"error": "评论不存在"})
+		response.NotFound(c, "评论不存在")
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	response.NoContent(c)
 }
 
 // LikeComment 点赞评论
@@ -72,30 +71,30 @@ func LikeComment(c *gin.Context) {
 
 	comment, err := services.ToggleCommentLike(articleID, commentID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "操作失败"})
+		response.ServerError(c, "操作失败")
 		return
 	}
 
 	if comment == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "评论不存在"})
+		response.NotFound(c, "评论不存在")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"likes": comment.Likes})
+	response.Success(c, gin.H{"likes": comment.Likes})
 }
 
 // GetNotifications 获取通知
 func GetNotifications(c *gin.Context) {
 	currentUser := getCurrentUser(c)
 	if currentUser == nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "未登录"})
+		response.Unauthorized(c, "未登录")
 		return
 	}
 
 	// 获取所有文章
 	articles, err := services.GetAllArticles()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取通知失败"})
+		response.ServerError(c, "获取通知失败")
 		return
 	}
 
@@ -140,7 +139,7 @@ func GetNotifications(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	response.Success(c, gin.H{
 		"comments":    userComments,
 		"unreadCount": unreadCount,
 	})

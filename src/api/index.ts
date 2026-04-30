@@ -1,3 +1,20 @@
+// 统一的 API 响应格式
+export interface ApiResponse<T> {
+  success: boolean
+  code: number
+  data: T
+  message: string
+  error?: string
+}
+
+// 错误响应格式
+export interface ApiError {
+  success: false
+  code: number
+  error: string
+  message: string
+}
+
 // 文章类型（需要与 types/index.ts 保持一致）
 export interface Article {
   id: string
@@ -119,16 +136,32 @@ class ApiService {
       headers
     })
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: '请求失败' }))
-      throw new Error(error.error || '请求失败')
-    }
-
+    // 处理 204 No Content
     if (response.status === 204) {
       return null as T
     }
 
-    return response.json()
+    const result = await response.json()
+
+    // 检查是否是新的 RESTful 响应格式
+    if (result && typeof result === 'object' && 'success' in result) {
+      const apiResponse = result as ApiResponse<unknown>
+
+      if (!apiResponse.success) {
+        // 处理错误响应
+        throw new Error(apiResponse.error || apiResponse.message || '请求失败')
+      }
+
+      // 返回 data 字段
+      return apiResponse.data as T
+    }
+
+    // 兼容旧的响应格式（直接返回数据）
+    if (!response.ok) {
+      throw new Error(result.error || '请求失败')
+    }
+
+    return result as T
   }
 
   // 获取所有文章
@@ -322,12 +355,32 @@ class ApiService {
       body: formData
     })
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: '上传失败' }))
-      throw new Error(error.error || '上传失败')
+    const result = await response.json()
+
+    // 检查是否是新的 RESTful 响应格式
+    if (result && typeof result === 'object' && 'success' in result) {
+      const apiResponse = result as ApiResponse<{
+        url: string
+        filename: string
+        existing: boolean
+      }>
+
+      if (!apiResponse.success) {
+        throw new Error(apiResponse.error || apiResponse.message || '上传失败')
+      }
+
+      // 转换为完整URL
+      const url = apiResponse.data.url.startsWith('http')
+        ? apiResponse.data.url
+        : `${API_BASE.replace('/api', '')}${apiResponse.data.url}`
+      return { url }
     }
 
-    const result = await response.json()
+    // 兼容旧的响应格式
+    if (!response.ok) {
+      throw new Error(result.error || '上传失败')
+    }
+
     // 转换为完整URL
     return {
       url: result.url.startsWith('http')
