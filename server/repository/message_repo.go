@@ -371,3 +371,20 @@ func (r *CommentRepository) UpdateComment(articleID, commentID string, updates b
 	}
 	return &comment, nil
 }
+
+// MarkAsRead 标记评论为已读
+func (r *CommentRepository) MarkAsRead(articleID, commentID string) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	result, err := r.collection.UpdateOne(
+		ctx,
+		bson.M{"articleId": articleID, "id": commentID},
+		bson.M{"$set": bson.M{"isRead": true}},
+	)
+
+	if err != nil {
+		return false, err
+	}
+	return result.ModifiedCount > 0, nil
+}

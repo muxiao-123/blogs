@@ -172,6 +172,7 @@ func main() {
 
 		// 评论通知
 		api.GET("/notifications", middleware.AuthMiddleware(), handlers.GetNotifications)
+		api.POST("/notifications/read/:articleId/:commentId", middleware.AuthMiddleware(), handlers.MarkCommentAsRead)
 
 		// 健康检查
 		api.GET("/health", func(c *gin.Context) {

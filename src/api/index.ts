@@ -452,9 +452,11 @@ class ApiService {
     return this.request<{ comments: unknown[]; unreadCount: number }>(`${API_BASE}/notifications`)
   }
 
-  // 标记评论为已读 (后端没有实现，暂时跳过)
+  // 标记评论为已读
   async markCommentAsRead(commentId: string, articleId: string): Promise<void> {
-    return Promise.resolve()
+    return this.request(`${API_BASE}/notifications/read/${articleId}/${commentId}`, {
+      method: 'POST'
+    })
   }
 }
 

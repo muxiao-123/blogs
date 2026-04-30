@@ -382,6 +382,9 @@ const selectConversation = async (conv: Conversation) => {
   // 加载消息
   await loadMessages()
 
+  // 重新加载对话列表以更新未读数
+  await loadConversations()
+
   // 移动端滚动到顶部
   await nextTick()
   scrollToBottom()

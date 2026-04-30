@@ -236,6 +236,11 @@ func ToggleCommentLike(articleID, commentID string) (*models.Comment, error) {
 	return commentRepo.ToggleLike(articleID, commentID)
 }
 
+// MarkCommentAsRead 标记评论为已读
+func MarkCommentAsRead(articleID, commentID string) (bool, error) {
+	return commentRepo.MarkAsRead(articleID, commentID)
+}
+
 // GetArticleStats 获取文章统计
 func GetArticleStats() (*models.ArticleStats, error) {
 	articles, err := articleRepo.FindAll()

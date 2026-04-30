@@ -144,3 +144,28 @@ func GetNotifications(c *gin.Context) {
 		"unreadCount": unreadCount,
 	})
 }
+
+// MarkCommentAsRead 标记评论为已读
+func MarkCommentAsRead(c *gin.Context) {
+	currentUser := getCurrentUser(c)
+	if currentUser == nil {
+		response.Unauthorized(c, "未登录")
+		return
+	}
+
+	articleID := c.Param("articleId")
+	commentID := c.Param("commentId")
+
+	success, err := services.MarkCommentAsRead(articleID, commentID)
+	if err != nil {
+		response.ServerError(c, "标记已读失败")
+		return
+	}
+
+	if !success {
+		response.NotFound(c, "评论不存在")
+		return
+	}
+
+	response.Success(c, gin.H{"success": true})
+}
