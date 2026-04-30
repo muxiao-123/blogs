@@ -429,8 +429,8 @@ class ApiService {
   }
 
   // 获取未读消息数
-  async getUnreadCount(): Promise<{ count: number }> {
-    return this.request<{ count: number }>(`${API_BASE}/messages/unread`)
+  async getUnreadCount(): Promise<{ unreadCount: number }> {
+    return this.request<{ unreadCount: number }>(`${API_BASE}/messages/unread`)
   }
 
   // 标记消息为已读

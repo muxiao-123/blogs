@@ -82,7 +82,7 @@ const loadUnreadCount = async () => {
   if (!userStore.isLoggedIn) return
   try {
     const result = await api.getUnreadCount()
-    unreadCount.value = result.count ?? result.unreadCount ?? 0
+    unreadCount.value = result.unreadCount
   } catch (e) {
     console.error('获取未读消息数失败:', e)
   }
